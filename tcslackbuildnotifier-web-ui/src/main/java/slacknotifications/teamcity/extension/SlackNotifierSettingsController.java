@@ -180,7 +180,7 @@ public class SlackNotifierSettingsController extends BaseController {
                                                     Boolean showElapsedBuildTime, Boolean showBuildAgent, Boolean showCommits,
                                                     Boolean showCommitters, String branchName, Boolean showTriggeredBy,
                                                     Boolean showFailureReason, String proxyHost, String proxyPort,
-                                                    String proxyUser, String proxyPassword) {
+                                                    String proxyUser, String proxyPassword){
         SlackNotification notification = new SlackNotificationImpl(defaultChannel);
         notification.setTeamName(teamName);
         notification.setBotName(botName);
@@ -194,6 +194,7 @@ public class SlackNotifierSettingsController extends BaseController {
         notification.setFilterBranchName(branchName);
         notification.setShowTriggeredBy(showTriggeredBy);
         notification.setShowFailureReason(showFailureReason);
+        notification.setMentionSlackUserEnabled(true);
 
         if(proxyHost != null && !StringUtil.isEmpty(proxyHost)){
             Credentials creds = null;
@@ -217,9 +218,7 @@ public class SlackNotifierSettingsController extends BaseController {
         payload.setBuildTypeId("b123");
         payload.setColor("danger");
         List<Commit> commits = new ArrayList<Commit>();
-        commits.add(new Commit("a5bdc78", "Bug fix for that awful thing", "jbloggs", "jbloggs"));
-        commits.add(new Commit("cc4500d", "New feature that rocks", "bbrave", "bbrave"));
-        commits.add(new Commit("abb23b4", "Merge of branch xyz", "ddruff", "ddruff"));
+        commits.add(new Commit("abb23b4", "Merge of branch xyz", "frankjh3", "frankie.holzapfel"));
         payload.setCommits(commits);
         payload.setElapsedTime(13452);
         payload.setFirstFailedBuild(true);
@@ -228,6 +227,12 @@ public class SlackNotifierSettingsController extends BaseController {
         notification.setPayload(payload);
         notification.setEnabled(true);
 
+        try{
+            notification.post();
+        }
+        catch(IOException e){
+
+        }
         return notification;
     }
 
