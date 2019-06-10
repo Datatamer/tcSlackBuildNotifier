@@ -239,6 +239,7 @@ public class SlackNotificationImpl implements SlackNotification {
             Loggers.SERVER.info("SlackNotificationListener :: Preparing message for URL " + url);
 
             WebHookPayload requestBody = new WebHookPayload();
+            
             requestBody.setChannel(this.getChannel());
             requestBody.setUsername(this.getBotName());
             requestBody.setIcon_url(this.getIconUrl());
@@ -452,6 +453,7 @@ public class SlackNotificationImpl implements SlackNotification {
 
         public String toJson() {
             Gson gson = new Gson();
+            System.out.println(gson.toJson(this));
             return gson.toJson(this);
         }
     }
