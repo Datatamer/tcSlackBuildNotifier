@@ -39,6 +39,8 @@ public class SlackNotificationConfig {
 	private static final String MAX_COMMITS_TO_DISPLAY = "maxCommitsToDisplay";
 	private static final String SHOW_FAILURE_REASON = "showFailureReason";
 	private static final String FILTER_BRANCH_NAME = "filterBranchName";
+	private static final String SEND_DEFAULT_CHANNEL = "sendDefaultChannel";
+	private static final String SEND_USERS = "sendUsers";
 	
 	
 	private Boolean enabled = true;
@@ -58,6 +60,8 @@ public class SlackNotificationConfig {
     private boolean customContent;
     private SlackNotificationContentConfig content;
 	private String filterBranchName;
+	private boolean sendDefaultChannel;
+	private boolean sendUsers;
 
 	@SuppressWarnings("unchecked")
 	public SlackNotificationConfig(Element e) {
@@ -110,7 +114,15 @@ public class SlackNotificationConfig {
 		if (e.getAttribute(WHO_TRIGGERED_ENABLED_MESSAGE) != null){
 			this.setMentionWhoTriggeredEnabled(Boolean.parseBoolean(e.getAttributeValue(WHO_TRIGGERED_ENABLED_MESSAGE)));
 		}
-		
+
+		if(e.getAttribute(SEND_DEFAULT_CHANNEL) != null){
+			this.setSendDefaultChannel(Boolean.parseBoolean(e.getAttributeValue("sendDefaultChannel")));
+		}
+
+		if(e.getAttribute(SEND_USERS) != null){
+			this.setSendUsers(Boolean.parseBoolean(e.getAttributeValue("sendUsers")));
+		}
+
 		if(e.getChild(STATES) != null){
 			Element eStates = e.getChild(STATES);
 			List<Element> statesList = eStates.getChildren("state");
@@ -233,7 +245,9 @@ public class SlackNotificationConfig {
 								   boolean mentionChannelEnabled,
 								   boolean mentionSlackUserEnabled,
 								   boolean mentionHereEnabled,
-								   boolean mentionWhoTriggeredEnabled) {
+								   boolean mentionWhoTriggeredEnabled,
+									 boolean sendDefaultChannel,
+									 boolean sendUsers) {
         this.content = new SlackNotificationContentConfig();
         int Min = 1000000, Max = 1000000000;
         Integer Rand = Min + (int) (Math.random() * ((Max - Min) + 1));
@@ -251,6 +265,8 @@ public class SlackNotificationConfig {
 		this.setMentionSlackUserEnabled(mentionSlackUserEnabled);
 		this.setMentionHereEnabled(mentionHereEnabled);
 		this.setMentionWhoTriggeredEnabled(mentionWhoTriggeredEnabled);
+		this.setSendDefaultChannel(sendDefaultChannel);
+		this.setSendUsers(sendUsers);
 
         if (!this.allBuildTypesEnabled) {
             this.enabledBuildTypesSet = enabledBuildTypes;
@@ -278,6 +294,8 @@ public class SlackNotificationConfig {
 		el.setAttribute(SLACK_USER_ENABLED_MESSAGE, String.valueOf(this.getMentionSlackUserEnabled()));
 		el.setAttribute(HERE_ENABLED_MESSAGE, String.valueOf(this.getMentionHereEnabled()));
 		el.setAttribute(WHO_TRIGGERED_ENABLED_MESSAGE, String.valueOf(this.isMentionWhoTriggeredEnabled()));
+		el.setAttribute(SEND_DEFAULT_CHANNEL, String.valueOf(this.getSendDefaultChannel()));
+		el.setAttribute(SEND_USERS, String.valueOf(this.getSendUsers()));
 
 		Element statesEl = new Element(STATES);
 		for (BuildStateEnum state : states.getStateSet()){
@@ -605,5 +623,21 @@ public class SlackNotificationConfig {
 
 	public void setMentionWhoTriggeredEnabled(boolean mentionWhoTriggeredEnabled) {
 		this.mentionWhoTriggeredEnabled = mentionWhoTriggeredEnabled;
+	}
+
+	public void setSendDefaultChannel(boolean sendDefaultChannel){
+    	this.sendDefaultChannel = sendDefaultChannel;
+	}
+
+	public boolean getSendDefaultChannel(){
+    	return sendDefaultChannel;
+	}
+
+	public void setSendUsers(boolean sendUsers){
+    	this.sendUsers = sendUsers;
+	}
+
+	public boolean getSendUsers(){
+    	return sendUsers;
 	}
 }

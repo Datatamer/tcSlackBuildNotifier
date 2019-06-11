@@ -81,6 +81,7 @@ public class SlackNotificationListener extends BuildServerAdapter {
         slackNotification.setShowFailureReason(myMainSettings.getShowFailureReason() == null ? SlackNotificationContentConfig.DEFAULT_SHOW_FAILURE_REASON : myMainSettings.getShowFailureReason());
         slackNotification.setMaxCommitsToDisplay(myMainSettings.getMaxCommitsToDisplay());
         slackNotification.setMentionChannelEnabled(slackNotificationConfig.getMentionChannelEnabled());
+        slackNotification.setSendDefaultChannel(slackNotificationConfig.getSendDefaultChannel());
 		slackNotification.setMentionSlackUserEnabled(slackNotificationConfig.getMentionSlackUserEnabled());
 		slackNotification.setMentionWhoTriggeredEnabled(slackNotificationConfig.isMentionWhoTriggeredEnabled());
 		slackNotification.setMentionHereEnabled(slackNotificationConfig.getMentionHereEnabled());

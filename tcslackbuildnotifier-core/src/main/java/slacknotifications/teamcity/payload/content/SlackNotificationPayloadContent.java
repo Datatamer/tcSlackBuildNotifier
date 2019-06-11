@@ -338,7 +338,6 @@ public class SlackNotificationPayloadContent {
 
 
 
-
     public String getAgentName() {
         return agentName;
     }

@@ -40,7 +40,7 @@ public class SlackNotificationDMTests {
 
     SlackNotification notification = controller.createMockNotification(
       "tamr",
-      "@frankie.holzapfel",
+      "#teamcity_slack_tests",
       "Test Bot",
       "https://hooks.slack.com/services/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",
       SlackNotificationMainConfig.DEFAULT_ICONURL,
@@ -50,7 +50,7 @@ public class SlackNotificationDMTests {
       true,
       true,
       "master",
-      true,
+      false,
       true,
       null, null, null, null);
 

@@ -71,6 +71,8 @@ public class SlackNotificationImpl implements SlackNotification {
     private boolean mentionHereEnabled;
     private boolean mentionWhoTriggeredEnabled;
     private boolean showFailureReason;
+    private boolean sendDefaultChannel;
+    private boolean sendUsers;
 
 /*	This is a bit mask of states that should trigger a SlackNotification.
  *  All ones (11111111) means that all states will trigger the slacknotifications
@@ -196,7 +198,7 @@ public class SlackNotificationImpl implements SlackNotification {
             }
             if (this.payload != null) {
 
-                List<Attachment> attachments = getAttachments();
+                List<Attachment> attachments = getAttachments("");
 
                 String attachmentsParam = String.format("attachments=%s", URLEncoder.encode(convertAttachmentsToJson(attachments), UTF8));
 
@@ -239,50 +241,78 @@ public class SlackNotificationImpl implements SlackNotification {
             Loggers.SERVER.info("SlackNotificationListener :: Preparing message for URL " + url);
 
             WebHookPayload requestBody = new WebHookPayload();
-            
-            requestBody.setChannel(this.getChannel());
-            requestBody.setUsername(this.getBotName());
-            requestBody.setIcon_url(this.getIconUrl());
 
-            HttpPost httppost = new HttpPost(url);
+            List<Commit> commits = this.payload.getCommits();
 
-            if (this.payload != null) {
-                requestBody.setText(payload.getBuildDescriptionWithLinkSyntax());
-                requestBody.setAttachments(getAttachments());
+            //send to default channel if enabled
+            if(sendDefaultChannel){
+                sendToChannel(this.getChannel(), requestBody, url);
             }
 
-            String bodyParam = String.format("payload=%s", URLEncoder.encode(requestBody.toJson(), UTF8));
-
-            Loggers.SERVER.info("SlackNotificationListener :: Body message will be " + bodyParam);
-
-            httppost.setEntity(new StringEntity(bodyParam));
-            httppost.setHeader("Content-Type", CONTENT_TYPE);
-
-            try {
-                HttpResponse response = client.execute(httppost);
-                this.resultCode = response.getStatusLine().getStatusCode();
-
-                PostMessageResponse resp = new PostMessageResponse();
-
-                if (this.resultCode != HttpStatus.SC_OK) {
-                    String error = EntityUtils.toString(response.getEntity());
-                    resp.setOk(error == "ok");
-                    resp.setError(error);
+            if(sendUsers){
+                String slackUser;
+                for(Commit commit : commits){
+                    if(commit.hasSlackUserId()){
+                        slackUser = commit.getSlackUserId();
+                        if(slackUser.charAt(0) != '@'){
+                            slackUser = "@" + slackUser;
+                        }
+                        try {
+                            sendToChannel(slackUser, requestBody, url);
+                        }
+                        catch(IOException e){
+                            //failed to find slack user ID
+                        }
+                    }
                 }
-                else{
-                    resp.setOk(true);
-                    this.response = resp;
-                }
-
-                this.content = EntityUtils.toString(response.getEntity());
-
-            } finally {
-                httppost.releaseConnection();
             }
         }
     }
 
-    private List<Attachment> getAttachments() {
+    private void sendToChannel(String channel, WebHookPayload requestBody, String url) throws IOException{
+
+        requestBody.setChannel(channel);
+        requestBody.setUsername(this.getBotName());
+        requestBody.setIcon_url(this.getIconUrl());
+
+        HttpPost httppost = new HttpPost(url);
+
+        if (this.payload != null) {
+            requestBody.setText(payload.getBuildDescriptionWithLinkSyntax());
+            requestBody.setAttachments(getAttachments(channel));
+        }
+
+        String bodyParam = String.format("payload=%s", URLEncoder.encode(requestBody.toJson(), UTF8));
+
+        Loggers.SERVER.info("SlackNotificationListener :: Body message will be " + bodyParam);
+
+        httppost.setEntity(new StringEntity(bodyParam));
+        httppost.setHeader("Content-Type", CONTENT_TYPE);
+
+        try {
+            HttpResponse response = client.execute(httppost);
+            this.resultCode = response.getStatusLine().getStatusCode();
+
+            PostMessageResponse resp = new PostMessageResponse();
+
+            if (this.resultCode != HttpStatus.SC_OK) {
+                String error = EntityUtils.toString(response.getEntity());
+                resp.setOk(error == "ok");
+                resp.setError(error);
+            }
+            else{
+                resp.setOk(true);
+                this.response = resp;
+            }
+
+            this.content = EntityUtils.toString(response.getEntity());
+
+        } finally {
+            httppost.releaseConnection();
+        }
+    }
+
+    private List<Attachment> getAttachments(String slackUser) {
         List<Attachment> attachments = new ArrayList<Attachment>();
         Attachment attachment = new Attachment(this.payload.getBuildName(), null, null, this.payload.getColor());
 
@@ -314,6 +344,10 @@ public class SlackNotificationImpl implements SlackNotification {
 
         StringBuilder sbCommits = new StringBuilder();
 
+        //Get commits from the user being sent to
+        //Divded into own section away from rest of commits
+        StringBuilder sbUserCommits = new StringBuilder();
+
         List<Commit> commits = this.payload.getCommits();
 
         List<Commit> commitsToDisplay = new ArrayList<Commit>(commits);
@@ -329,16 +363,28 @@ public class SlackNotificationImpl implements SlackNotification {
             for (Commit commit : commitsToDisplay) {
                 String revision = commit.getRevision();
                 revision = revision == null ? "" : revision;
-                sbCommits.append(String.format("%s :: %s :: %s\n", revision.substring(0, Math.min(revision.length(), 10)), commit.getUserName(), commit.getDescription()));
+                if(commit.getSlackUserId().equals(slackUser.substring(1))){
+                    sbUserCommits.append(String.format("%s :: %s :: %s\n", revision.substring(0, Math.min(revision.length(), 10)), commit.getUserName(), commit.getDescription()));
+                }
+                else{
+                    sbCommits.append(String.format("%s :: %s :: %s\n", revision.substring(0, Math.min(revision.length(), 10)), commit.getUserName(), commit.getDescription()));
+
+                }
             }
 
             if (truncated) {
                 sbCommits.append(String.format("(+ %d more)\n", totalCommits - 5));
             }
 
-            if (!commitsToDisplay.isEmpty()) {
+            if (sbUserCommits.length() > 0) {
+                attachment.addField("Your Commits", sbUserCommits.toString(), false);
+            }
+
+            if (sbCommits.length() > 0) {
                 attachment.addField("Commits", sbCommits.toString(), false);
             }
+
+
         }
 
         List<String> slackUsers = new ArrayList<String>();
@@ -453,7 +499,6 @@ public class SlackNotificationImpl implements SlackNotification {
 
         public String toJson() {
             Gson gson = new Gson();
-            System.out.println(gson.toJson(this));
             return gson.toJson(this);
         }
     }
@@ -718,6 +763,16 @@ public class SlackNotificationImpl implements SlackNotification {
     @Override
     public void setMentionWhoTriggeredEnabled(boolean mentionWhoTriggeredEnabled) {
         this.mentionWhoTriggeredEnabled = mentionWhoTriggeredEnabled;
+    }
+
+    @Override
+    public void setSendDefaultChannel(boolean sendDefaultChannel){
+        this.sendDefaultChannel = sendDefaultChannel;
+    }
+
+    @Override
+    public void setSendUsers(boolean sendUsers){
+        this.sendUsers = sendUsers;
     }
 
     public boolean getIsApiToken() {

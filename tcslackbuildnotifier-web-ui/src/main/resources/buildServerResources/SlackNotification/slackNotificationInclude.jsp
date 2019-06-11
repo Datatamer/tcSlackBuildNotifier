@@ -151,8 +151,19 @@
 													</td>
 												</tr>
 												<tr style="border:none;">
-													<td>Mention on first failure:</td>
-													<td style="padding-left:3px;"><label style='white-space:nowrap;'>
+													<td>Send or mention on first failure:</td>
+
+													<td><label style='white-space:nowrap;'>
+                                                    	<input class="buildState" id="sendDefaultChannel" name="SendDefaultChannel" type=checkbox />
+                                                    	Send to Channel</label>
+                                                    </td>
+                                                    <td><label style='white-space:nowrap;'>
+                                                        <input class="buildState" id="sendUsers" name="sendUsers" type=checkbox />
+                                                        Send to recent commits</label>
+                                                    </td>
+												</tr>
+												<tr style="border:none;"><td>&nbsp;</td>
+                                                    <td style="padding-left:3px;"><label style='white-space:nowrap;'>
 														<input class="buildState" id="mentionChannelEnabled" name="mentionChannelEnabled" type=checkbox />
 														 @channel</label>
 													</td>
@@ -160,13 +171,15 @@
 														<input class="buildState" id="mentionSlackUserEnabled" name="mentionSlackUserEnabled" type=checkbox />
 														 Slack User (if known)</label>
 													</td>
+
 												</tr>
 												<tr style="border:none;"><td>&nbsp;</td>
-													<td><label style='white-space:nowrap;'>
+                                                    <td><label style='white-space:nowrap;'>
                                                         <input class="buildState" id="mentionHereEnabled" name="mentionHereEnabled" type=checkbox />
                                                          @here</label>
 													</td>
-												</tr>
+
+                                                </tr>
 												<tr style="border:none;">
 													<td><label for="mentionWhoTriggeredEnabled">Mention who triggered:</label></td>
 													<td style="padding-left:3px;" colspan=2><input id="mentionWhoTriggeredEnabled" type=checkbox name="mentionWhoTriggeredEnabled"/></td>

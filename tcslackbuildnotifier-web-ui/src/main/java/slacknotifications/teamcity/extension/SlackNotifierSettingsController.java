@@ -194,7 +194,8 @@ public class SlackNotifierSettingsController extends BaseController {
         notification.setFilterBranchName(branchName);
         notification.setShowTriggeredBy(showTriggeredBy);
         notification.setShowFailureReason(showFailureReason);
-        notification.setMentionSlackUserEnabled(true);
+        notification.setMentionSlackUserEnabled(false);
+        notification.setSendDefaultChannel(false);
 
         if(proxyHost != null && !StringUtil.isEmpty(proxyHost)){
             Credentials creds = null;
@@ -218,7 +219,10 @@ public class SlackNotifierSettingsController extends BaseController {
         payload.setBuildTypeId("b123");
         payload.setColor("danger");
         List<Commit> commits = new ArrayList<Commit>();
+        commits.add(new Commit("abb23b4", "Merge of branch xyz", "Jimbo", "Jimbo.slack"));
         commits.add(new Commit("abb23b4", "Merge of branch xyz", "frankjh3", "frankie.holzapfel"));
+        //commits.add(new Commit("rahfaaf", "Testin stuff", "maxlyman", "maxlyman"));
+
         payload.setCommits(commits);
         payload.setElapsedTime(13452);
         payload.setFirstFailedBuild(true);
