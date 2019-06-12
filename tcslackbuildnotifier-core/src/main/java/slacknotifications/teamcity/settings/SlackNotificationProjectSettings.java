@@ -72,6 +72,7 @@ public class SlackNotificationProjectSettings implements ProjectSettings {
             	Element el = whc.getAsElement();
             	Loggers.SERVER.debug(el.toString());
                 parentElement.addContent(el);
+
 				Loggers.SERVER.debug(NAME + ":writeTo :: channel " + whc.getChannel());
 				Loggers.SERVER.debug(NAME + ":writeTo :: enabled " + String.valueOf(whc.getEnabled()));
             }

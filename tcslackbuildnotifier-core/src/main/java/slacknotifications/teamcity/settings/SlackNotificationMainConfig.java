@@ -37,7 +37,6 @@ public class SlackNotificationMainConfig implements ChangeListener {
 	private static final String ENABLED = "enabled";
 	private static final String TEAM_NAME = "teamName";
 	private static final String FILTER_BRANCH_NAME = "filterBranchName";
-	private static final String SEND_DEFAULT_CHANNEL = "sendDefaultChannel";
 
 
 
@@ -57,7 +56,6 @@ public class SlackNotificationMainConfig implements ChangeListener {
     private String token;
 	private Boolean proxyShortNames = false;
     private boolean enabled = true;
-    private boolean sendDefaultChannel = true;
 	
 	public final String SINGLE_HOST_REGEX = "^[^./~`'\"]+(?:/.*)?$";
 	public final String HOSTNAME_ONLY_REGEX = "^([^/]+)(?:/.*)?$";
@@ -307,7 +305,6 @@ public class SlackNotificationMainConfig implements ChangeListener {
 						rootElement.setAttribute("token", emptyIfNull(SlackNotificationMainConfig.this.token));
 						rootElement.setAttribute("iconurl", emptyIfNull(SlackNotificationMainConfig.this.content.getIconUrl()));
 						rootElement.setAttribute("botname", emptyIfNull(SlackNotificationMainConfig.this.content.getBotName()));
-						rootElement.setAttribute(SEND_DEFAULT_CHANNEL, emptyIfNull(Boolean.toString(SlackNotificationMainConfig.this.sendDefaultChannel)));
 
 						if(SlackNotificationMainConfig.this.content.getShowBuildAgent() != null){
 							rootElement.setAttribute(SHOW_BUILD_AGENT, Boolean.toString(SlackNotificationMainConfig.this.content.getShowBuildAgent()));
@@ -420,10 +417,7 @@ public class SlackNotificationMainConfig implements ChangeListener {
             {
                 content.setShowFailureReason(Boolean.parseBoolean(slackNotificationsElement.getAttributeValue(SHOW_FAILURE_REASON)));
             }
-						if(slackNotificationsElement.getAttribute(SEND_DEFAULT_CHANNEL) != null)
-						{
-								content.setSendDefaultChannel(Boolean.parseBoolean(slackNotificationsElement.getAttributeValue(SEND_DEFAULT_CHANNEL)));
-						}
+
 			if(slackNotificationsElement.getAttribute(FILTER_BRANCH_NAME) != null)
 			{
 				setFilterBranchName(slackNotificationsElement.getAttributeValue(FILTER_BRANCH_NAME));

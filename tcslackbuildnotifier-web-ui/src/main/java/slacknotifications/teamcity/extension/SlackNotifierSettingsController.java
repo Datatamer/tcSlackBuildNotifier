@@ -62,6 +62,8 @@ public class SlackNotifierSettingsController extends BaseController {
     private PluginDescriptor descriptor;
     private String filterBranchName;
 
+    private List<Commit> addToMock = new ArrayList<Commit>();
+
     public SlackNotifierSettingsController(@NotNull SBuildServer server,
                                            @NotNull ServerPaths serverPaths,
                                            @NotNull WebControllerManager manager,
@@ -141,7 +143,7 @@ public class SlackNotifierSettingsController extends BaseController {
                 filterBranchName,
                 Boolean.parseBoolean(showTriggeredBy),
                 Boolean.parseBoolean(showFailureReason),
-                proxyHost, proxyPort, proxyUser, proxyPassword);
+                proxyHost, proxyPort, proxyUser, proxyPassword, true, false);
 
         notification.post();
 
@@ -180,7 +182,8 @@ public class SlackNotifierSettingsController extends BaseController {
                                                     Boolean showElapsedBuildTime, Boolean showBuildAgent, Boolean showCommits,
                                                     Boolean showCommitters, String branchName, Boolean showTriggeredBy,
                                                     Boolean showFailureReason, String proxyHost, String proxyPort,
-                                                    String proxyUser, String proxyPassword){
+                                                    String proxyUser, String proxyPassword,
+                                                    boolean sendDefaultChannel, boolean sendUsers){
         SlackNotification notification = new SlackNotificationImpl(defaultChannel);
         notification.setTeamName(teamName);
         notification.setBotName(botName);
@@ -195,7 +198,8 @@ public class SlackNotifierSettingsController extends BaseController {
         notification.setShowTriggeredBy(showTriggeredBy);
         notification.setShowFailureReason(showFailureReason);
         notification.setMentionSlackUserEnabled(false);
-        notification.setSendDefaultChannel(false);
+        notification.setSendDefaultChannel(sendDefaultChannel);
+        notification.setSendUsers(sendUsers);
 
         if(proxyHost != null && !StringUtil.isEmpty(proxyHost)){
             Credentials creds = null;
@@ -219,8 +223,11 @@ public class SlackNotifierSettingsController extends BaseController {
         payload.setBuildTypeId("b123");
         payload.setColor("danger");
         List<Commit> commits = new ArrayList<Commit>();
-        commits.add(new Commit("abb23b4", "Merge of branch xyz", "Jimbo", "Jimbo.slack"));
-        commits.add(new Commit("abb23b4", "Merge of branch xyz", "frankjh3", "frankie.holzapfel"));
+
+        for(Commit c : addToMock){
+            commits.add(c);
+        }
+
         //commits.add(new Commit("rahfaaf", "Testin stuff", "maxlyman", "maxlyman"));
 
         payload.setCommits(commits);
@@ -238,6 +245,10 @@ public class SlackNotifierSettingsController extends BaseController {
 
         }
         return notification;
+    }
+
+    public void addCommitMockNotification(Commit c){
+        addToMock.add(c);
     }
 
     public Integer tryParseInt(String str) {

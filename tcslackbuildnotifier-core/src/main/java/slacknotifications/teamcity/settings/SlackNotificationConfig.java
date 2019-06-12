@@ -340,7 +340,6 @@ public class SlackNotificationConfig {
             customContentEl.setAttribute(SHOW_FAILURE_REASON, this.content.getShowFailureReason().toString());
             el.addContent(customContentEl);
         }
-		
 		return el;
 	}
 	

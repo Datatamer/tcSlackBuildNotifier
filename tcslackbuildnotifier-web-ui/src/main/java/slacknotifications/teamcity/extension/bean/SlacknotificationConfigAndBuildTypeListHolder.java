@@ -42,6 +42,8 @@ public class SlacknotificationConfigAndBuildTypeListHolder {
     private String filterBranchName;
     private String botName;
     private String iconUrl;
+    private boolean sendDefaultChannel;
+    private boolean sendUsers;
 
 	public SlacknotificationConfigAndBuildTypeListHolder(SlackNotificationConfig config, SlackNotificationMainSettings mainSettings) {
 		token = config.getToken();
@@ -70,6 +72,8 @@ public class SlacknotificationConfigAndBuildTypeListHolder {
         filterBranchName = valueOrFallback(config.getFilterBranchName(), valueOrFallback(mainSettings.getFilterBranchName(),SlackNotificationContentConfig.DEFAULT_FILTER_BRANCH_NAME));
         botName = valueOrFallback(config.getContent().getBotName(), SlackNotificationMainConfig.DEFAULT_BOTNAME);
         iconUrl = valueOrFallback(config.getContent().getIconUrl(), SlackNotificationMainConfig.DEFAULT_ICONURL);
+        sendDefaultChannel = config.getSendDefaultChannel();
+        sendUsers = config.getSendUsers();
 	}
 
 	
