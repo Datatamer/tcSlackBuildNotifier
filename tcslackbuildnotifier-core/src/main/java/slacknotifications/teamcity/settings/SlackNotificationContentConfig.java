@@ -12,7 +12,6 @@ public class SlackNotificationContentConfig {
     public static final boolean DEFAULT_SHOW_TRIGGERED_BY = true;
     public static final boolean DEFAULT_SHOW_FAILURE_REASON = false;
     public static final String DEFAULT_FILTER_BRANCH_NAME = "";
-    public static final boolean DEFAULT_SEND_DEFAULT_CHANNEL = true;
     private String iconUrl = SlackNotificationMainConfig.DEFAULT_ICONURL;
     private String botName = SlackNotificationMainConfig.DEFAULT_BOTNAME;
     private Boolean showBuildAgent;
@@ -23,7 +22,6 @@ public class SlackNotificationContentConfig {
     private int maxCommitsToDisplay = 5;
     private boolean enabled;
     private Boolean showFailureReason;
-    private boolean sendDefaultChannel = true;
 
     public String getIconUrl() {
         return iconUrl;
@@ -105,10 +103,4 @@ public class SlackNotificationContentConfig {
         this.enabled = enabled;
     }
 
-    public void setSendDefaultChannel(boolean sendDefaultChannel) {
-        this.sendDefaultChannel = sendDefaultChannel;}
-
-    public boolean getSendDefaultChannel(){
-        return sendDefaultChannel;
-    }
 }
