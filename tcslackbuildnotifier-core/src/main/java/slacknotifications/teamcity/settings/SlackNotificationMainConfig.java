@@ -1,7 +1,7 @@
 package slacknotifications.teamcity.settings;
 
 import com.intellij.openapi.util.JDOMUtil;
-import com.intellij.openapi.util.text.StringUtil;
+
 import jetbrains.buildServer.configuration.ChangeListener;
 import jetbrains.buildServer.configuration.FileWatcher;
 import jetbrains.buildServer.serverSide.ServerPaths;
@@ -14,7 +14,6 @@ import slacknotifications.teamcity.Loggers;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 public class SlackNotificationMainConfig implements ChangeListener {
     public static final String DEFAULT_BOTNAME = "TeamCity";
@@ -40,7 +39,8 @@ public class SlackNotificationMainConfig implements ChangeListener {
 	private static final String FILTER_BRANCH_NAME = "filterBranchName";
 
 
-    private final FileWatcher myChangeObserver;
+
+	private final FileWatcher myChangeObserver;
 	private final File myConfigDir;
 	private final File myConfigFile;
 	private String slacknotificationInfoUrl = null;
@@ -417,6 +417,7 @@ public class SlackNotificationMainConfig implements ChangeListener {
             {
                 content.setShowFailureReason(Boolean.parseBoolean(slackNotificationsElement.getAttributeValue(SHOW_FAILURE_REASON)));
             }
+
 			if(slackNotificationsElement.getAttribute(FILTER_BRANCH_NAME) != null)
 			{
 				setFilterBranchName(slackNotificationsElement.getAttributeValue(FILTER_BRANCH_NAME));

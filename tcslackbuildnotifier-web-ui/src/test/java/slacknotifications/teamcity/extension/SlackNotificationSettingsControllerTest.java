@@ -49,7 +49,7 @@ public class SlackNotificationSettingsControllerTest {
                 "master",
                 true,
                 true,
-                null, null, null, null);
+                null, null, null, null, true, true);
 
         assertNotNull(notification);
         assertEquals("the team", notification.getTeamName());

@@ -28,6 +28,7 @@ public class PayloadContentCommits {
             String slackUserId = null;
             if (!committers.isEmpty()) {
                 SUser committer = committers.iterator().next();
+                //Gets slackUserID from teamcity
                 slackUserId = committer.getPropertyValue(SlackNotificator.USERID_KEY);
                 Loggers.ACTIVITIES.debug("Resolved committer " + change.getUserName() + " to Slack User " + slackUserId);
             }

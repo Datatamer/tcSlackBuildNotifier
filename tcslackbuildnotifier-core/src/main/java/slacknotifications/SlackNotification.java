@@ -122,4 +122,9 @@ public interface SlackNotification {
     public abstract void setShowFailureReason(boolean showFailureReason);
 
 	public abstract void setMentionWhoTriggeredEnabled(boolean mentionWhoTriggeredEnabled);
+
+	public abstract void setSendDefaultChannel(boolean sendDefaultChannel);
+
+	public abstract void setSendUsers(boolean sendUsers);
+
 }

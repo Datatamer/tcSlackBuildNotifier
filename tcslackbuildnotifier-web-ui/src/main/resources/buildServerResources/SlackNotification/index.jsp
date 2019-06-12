@@ -151,6 +151,10 @@
 					jQuerySlacknotification('#botName').val(slacknotification.botName);
 					jQuerySlacknotification('#iconUrl').val(slacknotification.iconUrl)
 					jQuerySlacknotification('#showFailureReason').attr('checked', slacknotification.showFailureReason);
+					jQuerySlacknotification('#sendDefaultChannel').attr('checked', slacknotification.sendDefaultChannel);
+					jQuerySlacknotification('#sendUsers').attr('checked', slacknotification.sendUsers);
+
+
 				}
 			});
 			updateSelectedBuildTypes();

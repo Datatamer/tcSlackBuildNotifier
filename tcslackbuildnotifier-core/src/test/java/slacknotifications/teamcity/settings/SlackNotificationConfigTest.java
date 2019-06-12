@@ -4,10 +4,13 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.junit.Before;
 import org.junit.Test;
+
+import slacknotifications.teamcity.BuildState;
 import slacknotifications.testframework.util.ConfigLoaderUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 
 import static org.junit.Assert.*;
 
@@ -20,6 +23,7 @@ public class SlackNotificationConfigTest {
 	SlackNotificationConfig slacknotificationDisabled;
 	SlackNotificationConfig slacknotificationMostEnabled;
     SlackNotificationConfig slacknotificationCustomContent;
+    SlackNotificationConfig slacknotificationDMEnabledDefaultDisabled;
 
 
     @Before
@@ -30,6 +34,7 @@ public class SlackNotificationConfigTest {
 		slacknotificationDisabled    = ConfigLoaderUtil.getFirstSlackNotificationInConfig(new File("src/test/resources/project-settings-test-slacknotifications-disabled.xml"));
 		slacknotificationMostEnabled = ConfigLoaderUtil.getFirstSlackNotificationInConfig(new File("src/test/resources/project-settings-test-all-but-respchange-states-enabled.xml"));
         slacknotificationCustomContent = ConfigLoaderUtil.getFirstSlackNotificationInConfig(new File("src/test/resources/project-settings-test-custom-content.xml"));
+        slacknotificationDMEnabledDefaultDisabled = ConfigLoaderUtil.getFirstSlackNotificationInConfig(new File("src/test/resources/project-settings-send-DM-test.xml"));
 	}
 	
 //	private SlackNotificationConfig getFirstSlackNotificationInConfig(File f) throws JDOMException, IOException{
@@ -200,5 +205,33 @@ public class SlackNotificationConfigTest {
         assertTrue(slacknotificationCustomContent.getContent().getShowFailureReason());
         assertEquals(20, slacknotificationCustomContent.getContent().getMaxCommitsToDisplay());
     }
+
+    @Test
+		public void loadConfigWithDMEnabled(){
+    	assertTrue(slacknotificationDMEnabledDefaultDisabled.getSendUsers());
+    	assertFalse(slacknotificationDMEnabledDefaultDisabled.getSendDefaultChannel());
+    	assertTrue(slacknotificationDMEnabledDefaultDisabled.getEnabled());
+    	assertFalse(slacknotificationDMEnabledDefaultDisabled.getMentionChannelEnabled());
+    	assertFalse(slacknotificationDMEnabledDefaultDisabled.getMentionSlackUserEnabled());
+    	assertTrue(slacknotificationDMEnabledDefaultDisabled.getMentionHereEnabled());
+		}
+
+	@Test
+	public void changeConfigWithDMEnabled(){
+    SlackNotificationProjectSettings settings = new SlackNotificationProjectSettings();
+    settings.readFrom(slacknotificationDMEnabledDefaultDisabled.getAsElement());
+
+		assertTrue(slacknotificationDMEnabledDefaultDisabled.getSendUsers());
+		assertFalse(slacknotificationDMEnabledDefaultDisabled.getSendDefaultChannel());
+		BuildState state = new BuildState().setAllEnabled();
+
+		settings.updateSlackNotification("1", "1", "#general", "Steve",
+																		 "master", false, state, false, false,
+																		 new HashSet<String>(), false, false,
+																		 false, false, slacknotificationDMEnabledDefaultDisabled.getContent(), true, false);
+
+		assertTrue(slacknotificationDMEnabledDefaultDisabled.getSendUsers());
+		assertFalse(slacknotificationDMEnabledDefaultDisabled.getSendDefaultChannel());
+	}
 
 }
