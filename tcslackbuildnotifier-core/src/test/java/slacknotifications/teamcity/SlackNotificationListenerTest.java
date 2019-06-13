@@ -97,9 +97,7 @@ public class SlackNotificationListenerTest {
 
         when(httpClient.execute(isA(HttpUriRequest.class))).thenReturn(response);
 		slackNotificationImpl = new SlackNotificationImpl(httpClient, "");
-		slackNotificationImpl.setPayload(new SlackNotificationPayloadContent());
 		spySlackNotification = spy(slackNotificationImpl);
-		spySlackNotification.setPayload(new SlackNotificationPayloadContent());
 		whl = new SlackNotificationListener(sBuildServer, settings, configSettings, manager, factory);
 		projSettings = new SlackNotificationProjectSettings();
 		when(factory.getSlackNotification()).thenReturn(spySlackNotification);
@@ -144,7 +142,7 @@ public class SlackNotificationListenerTest {
 	    BuildState buildState = new BuildState();
 	    SlackNotificationMainSettings mainSettings = new SlackNotificationMainSettings(sBuildServer, serverPaths);
 	    mainSettings.readFrom(getFullConfigElement());
-	    SlackNotificationConfig config = new SlackNotificationConfig("", "#general", "teamName", "<default>", true, buildState, true, true, null, true, true, true, true, true, true);
+	    SlackNotificationConfig config = new SlackNotificationConfig("", "#teamcity_slack_tests", "teamName", "<default>", true, buildState, true, true, null, true, true, true, true, true, true);
 	    SlackNotificationListener whl = new SlackNotificationListener(sBuildServer, settings, mainSettings, manager, factory);
 	    
 	    whl.getFromConfig(slackNotificationImpl, config);
@@ -276,7 +274,7 @@ public class SlackNotificationListenerTest {
 		Status newStatus = Status.FAILURE;
 		whl.register();
 		whl.buildChangedStatus(sRunningBuild, oldStatus, newStatus);
-		verify(factory.getSlackNotification(), times(1)).post();
+		verify(factory.getSlackNotification(), times(0)).post();
 	}
 
 //	@Test

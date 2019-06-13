@@ -177,13 +177,25 @@ public class SlackNotifierSettingsController extends BaseController {
         return str == null || StringUtil.isEmpty(str);
     }
 
-    public SlackNotification createMockNotification(String teamName, String defaultChannel, String botName,
-                                                    String token, String iconUrl, Integer maxCommitsToDisplay,
-                                                    Boolean showElapsedBuildTime, Boolean showBuildAgent, Boolean showCommits,
-                                                    Boolean showCommitters, String branchName, Boolean showTriggeredBy,
-                                                    Boolean showFailureReason, String proxyHost, String proxyPort,
-                                                    String proxyUser, String proxyPassword,
-                                                    boolean sendDefaultChannel, boolean sendUsers){
+    public SlackNotification createMockNotification(String teamName,
+                                                    String defaultChannel,
+                                                    String botName,
+                                                    String token,
+                                                    String iconUrl,
+                                                    Integer maxCommitsToDisplay,
+                                                    Boolean showElapsedBuildTime,
+                                                    Boolean showBuildAgent,
+                                                    Boolean showCommits,
+                                                    Boolean showCommitters,
+                                                    String branchName,
+                                                    Boolean showTriggeredBy,
+                                                    Boolean showFailureReason,
+                                                    String proxyHost,
+                                                    String proxyPort,
+                                                    String proxyUser,
+                                                    String proxyPassword,
+                                                    boolean sendDefaultChannel,
+                                                    boolean sendUsers){
         SlackNotification notification = new SlackNotificationImpl(defaultChannel);
         notification.setTeamName(teamName);
         notification.setBotName(botName);
@@ -228,7 +240,6 @@ public class SlackNotifierSettingsController extends BaseController {
             commits.add(c);
         }
 
-        //commits.add(new Commit("rahfaaf", "Testin stuff", "maxlyman", "maxlyman"));
 
         payload.setCommits(commits);
         payload.setElapsedTime(13452);

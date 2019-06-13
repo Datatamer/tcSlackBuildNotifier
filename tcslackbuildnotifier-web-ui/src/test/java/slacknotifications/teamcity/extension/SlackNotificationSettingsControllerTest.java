@@ -36,7 +36,7 @@ public class SlackNotificationSettingsControllerTest {
                 config, payloadManager, pluginDescriptor);
 
         SlackNotification notification = controller.createMockNotification(
-                "the team",
+                "theteam",
                 "#general",
                 "The Bot",
                 "tokenthingy",
@@ -52,7 +52,7 @@ public class SlackNotificationSettingsControllerTest {
                 null, null, null, null, true, true);
 
         assertNotNull(notification);
-        assertEquals("the team", notification.getTeamName());
+        assertEquals("theteam", notification.getTeamName());
         assertEquals(SlackNotificationMainConfig.DEFAULT_ICONURL, notification.getIconUrl());
     }
 }
