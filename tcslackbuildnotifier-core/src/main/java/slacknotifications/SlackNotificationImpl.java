@@ -1,7 +1,9 @@
 package slacknotifications;
 
 import com.google.gson.Gson;
+
 import jetbrains.buildServer.util.StringUtil;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -17,12 +19,14 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.HttpHost;
+
 import slacknotifications.teamcity.BuildState;
 import slacknotifications.teamcity.Loggers;
 import slacknotifications.teamcity.payload.content.Commit;
 import slacknotifications.teamcity.payload.content.PostMessageResponse;
 import slacknotifications.teamcity.payload.content.SlackNotificationPayloadContent;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -35,535 +39,532 @@ import java.util.concurrent.TimeUnit;
 
 
 public class SlackNotificationImpl implements SlackNotification {
-	
-	private static final String UTF8 = "UTF-8";
 
-    private String proxyHost;
-    private Integer proxyPort = 0;
-    private String proxyUsername;
-    private String proxyPassword;
-    private String channel;
-    private String teamName;
-    private String token;
-    private String iconUrl;
-    private String content;
-    private SlackNotificationPayloadContent payload;
-    private Integer resultCode;
-    private HttpClient client;
-    private String filename = "";
-    private Boolean enabled = false;
-    private Boolean errored = false;
-    private String errorReason = "";
-    private List<NameValuePair> params = new ArrayList<NameValuePair>();
-    private BuildState states;
-    private String botName;
-    private final static String CONTENT_TYPE = "application/x-www-form-urlencoded";
-    private PostMessageResponse response;
-    private Boolean showBuildAgent;
-    private Boolean showElapsedBuildTime;
-    private boolean showCommits;
-    private boolean showCommitters;
-    private String filterBranchName;
-    private boolean showTriggeredBy;
-    private int maxCommitsToDisplay;
-    private boolean mentionChannelEnabled;
-    private boolean mentionSlackUserEnabled;
-    private boolean mentionHereEnabled;
-    private boolean mentionWhoTriggeredEnabled;
-    private boolean showFailureReason;
-    private boolean sendDefaultChannel;
-    private boolean sendUsers;
+  private static final String UTF8 = "UTF-8";
 
-/*	This is a bit mask of states that should trigger a SlackNotification.
- *  All ones (11111111) means that all states will trigger the slacknotifications
- *  We'll set that as the default, and then override if we get a more specific bit mask. */
-    //private Integer EventListBitMask = BuildState.ALL_ENABLED;
-    //private Integer EventListBitMask = Integer.parseInt("0",2);
+  private String proxyHost;
+  private Integer proxyPort = 0;
+  private String proxyUsername;
+  private String proxyPassword;
+  private String channel;
+  private String teamName;
+  private String token;
+  private String iconUrl;
+  private String content;
+  private SlackNotificationPayloadContent payload;
+  private Integer resultCode;
+  private HttpClient client;
+  private String filename = "";
+  private Boolean enabled = false;
+  private Boolean errored = false;
+  private String errorReason = "";
+  private List<NameValuePair> params = new ArrayList<NameValuePair>();
+  private BuildState states;
+  private String botName;
+  private final static String CONTENT_TYPE = "application/x-www-form-urlencoded";
+  private PostMessageResponse response;
+  private Boolean showBuildAgent;
+  private Boolean showElapsedBuildTime;
+  private boolean showCommits;
+  private boolean showCommitters;
+  private String filterBranchName;
+  private boolean showTriggeredBy;
+  private int maxCommitsToDisplay;
+  private boolean mentionChannelEnabled;
+  private boolean mentionSlackUserEnabled;
+  private boolean mentionHereEnabled;
+  private boolean mentionWhoTriggeredEnabled;
+  private boolean showFailureReason;
+  private boolean sendDefaultChannel;
+  private boolean sendUsers;
+
+  /*	This is a bit mask of states that should trigger a SlackNotification.
+   *  All ones (11111111) means that all states will trigger the slacknotifications
+   *  We'll set that as the default, and then override if we get a more specific bit mask. */
+  //private Integer EventListBitMask = BuildState.ALL_ENABLED;
+  //private Integer EventListBitMask = Integer.parseInt("0",2);
 
 
-    public SlackNotificationImpl() {
-        this.client = HttpClients.createDefault();
-        this.params = new ArrayList<NameValuePair>();
+  public SlackNotificationImpl() {
+    this.client = HttpClients.createDefault();
+    this.params = new ArrayList<NameValuePair>();
+  }
+
+  public SlackNotificationImpl(String channel) {
+    this.channel = channel;
+    this.client = HttpClients.createDefault();
+    this.params = new ArrayList<NameValuePair>();
+  }
+
+  public SlackNotificationImpl(String channel, String proxyHost, String proxyPort) {
+    this.channel = channel;
+    this.client = HttpClients.createDefault();
+    this.params = new ArrayList<NameValuePair>();
+    if (proxyPort.length() != 0) {
+      try {
+        this.proxyPort = Integer.parseInt(proxyPort);
+      } catch (NumberFormatException ex) {
+        ex.printStackTrace();
+      }
     }
+    this.setProxy(proxyHost, this.proxyPort, null);
+  }
 
-    public SlackNotificationImpl(String channel) {
-        this.channel = channel;
-        this.client = HttpClients.createDefault();
-        this.params = new ArrayList<NameValuePair>();
+  public SlackNotificationImpl(String channel, String proxyHost, Integer proxyPort) {
+    this.channel = channel;
+    this.client = HttpClients.createDefault();
+    this.params = new ArrayList<NameValuePair>();
+    this.setProxy(proxyHost, proxyPort, null);
+  }
+
+  public SlackNotificationImpl(String channel, SlackNotificationProxyConfig proxyConfig) {
+    this.channel = channel;
+    this.client = HttpClients.createDefault();
+    this.params = new ArrayList<NameValuePair>();
+    setProxy(proxyConfig);
+  }
+
+  public SlackNotificationImpl(HttpClient httpClient, String channel) {
+    this.channel = channel;
+    this.client = httpClient;
+  }
+
+  public void setProxy(SlackNotificationProxyConfig proxyConfig) {
+    if ((proxyConfig != null) && (proxyConfig.getProxyHost() != null) && (proxyConfig.getProxyPort() != null)) {
+      this.setProxy(proxyConfig.getProxyHost(), proxyConfig.getProxyPort(), proxyConfig.getCreds());
     }
+  }
 
-    public SlackNotificationImpl(String channel, String proxyHost, String proxyPort) {
-        this.channel = channel;
-        this.client = HttpClients.createDefault();
-        this.params = new ArrayList<NameValuePair>();
-        if (proxyPort.length() != 0) {
-            try {
-                this.proxyPort = Integer.parseInt(proxyPort);
-            } catch (NumberFormatException ex) {
-                ex.printStackTrace();
-            }
-        }
-        this.setProxy(proxyHost, this.proxyPort, null);
+  public void setProxy(String proxyHost, Integer proxyPort, Credentials credentials) {
+    this.proxyHost = proxyHost;
+    this.proxyPort = proxyPort;
+
+    if (this.proxyHost.length() > 0 && !this.proxyPort.equals(0)) {
+      HttpClientBuilder clientBuilder = HttpClients.custom()
+        .useSystemProperties()
+        .setProxy(new HttpHost(proxyHost, proxyPort, "http"));
+
+      if (credentials != null) {
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(new AuthScope(proxyHost, proxyPort), credentials);
+        clientBuilder.setDefaultCredentialsProvider(credsProvider);
+        Loggers.SERVER.debug("SlackNotification ::using proxy credentials " + credentials.getUserPrincipal().getName());
+      }
+
+      this.client = clientBuilder.build();
     }
+  }
 
-    public SlackNotificationImpl(String channel, String proxyHost, Integer proxyPort) {
-        this.channel = channel;
-        this.client = HttpClients.createDefault();
-        this.params = new ArrayList<NameValuePair>();
-        this.setProxy(proxyHost, proxyPort, null);
+  public String getBranchDisplayName() {
+    // The actual branch
+    String branchDisplayName = this.payload == null ? "" : this.payload.getBranchDisplayName();
+
+    // when branchDisplayName is not available, we fudge it to be the magic value <default>.
+    if (branchDisplayName == null || branchDisplayName.length() == 0) {
+      Loggers.SERVER.info("SlackNotificationImpl :: getBranchDisplayName :: branchDisplayName is empty, defaults to <default>.");
+      branchDisplayName = "<default>";
     }
+    return branchDisplayName;
+  }
 
-    public SlackNotificationImpl(String channel, SlackNotificationProxyConfig proxyConfig) {
-        this.channel = channel;
-        this.client = HttpClients.createDefault();
-        this.params = new ArrayList<NameValuePair>();
-        setProxy(proxyConfig);
+  public void post() throws IOException {
+    if (getFilterBranchName().equalsIgnoreCase(getBranchDisplayName()) ||
+      getFilterBranchName().equalsIgnoreCase("<default>") && this.payload != null && this.payload.getBranchIsDefault()) {
+      if (getIsApiToken()) {
+        postViaApi();
+      } else {
+        postViaWebHook();
+      }
+    } else {
+      Loggers.SERVER.warn("SlackNotificationImpl :: post :: filterBranchName not applicable, posting to Slack skipped.");
     }
+  }
 
-    public SlackNotificationImpl(HttpClient httpClient, String channel) {
-        this.channel = channel;
-        this.client = httpClient;
-    }
+  private void postViaApi() throws IOException {
+    if ((this.enabled) && (!this.errored)) {
+      if (this.teamName == null) {
+        this.teamName = "";
+      }
+      String url = String.format(
+        "https://slack.com/api/chat.postMessage?token=%s&link_names=1&as_user=0&username=%s&icon_url=%s&channel=%s&text=%s&pretty=1",
+        this.token,
+        this.botName == null ? "" : URLEncoder.encode(this.botName, UTF8),
+        this.iconUrl == null ? "" : URLEncoder.encode(this.iconUrl, UTF8),
+        this.channel == null ? "" : URLEncoder.encode(this.channel, UTF8),
+        this.payload == null ? "" : URLEncoder.encode(payload.getBuildDescriptionWithLinkSyntax(), UTF8),
+        ""
+      );
 
-    public void setProxy(SlackNotificationProxyConfig proxyConfig) {
-        if ((proxyConfig != null) && (proxyConfig.getProxyHost() != null) && (proxyConfig.getProxyPort() != null)) {
-            this.setProxy(proxyConfig.getProxyHost(), proxyConfig.getProxyPort(), proxyConfig.getCreds());
-        }
-    }
+      HttpPost httppost = new HttpPost(url);
 
-    public void setProxy(String proxyHost, Integer proxyPort, Credentials credentials) {
-        this.proxyHost = proxyHost;
-        this.proxyPort = proxyPort;
-        
-		if (this.proxyHost.length() > 0 && !this.proxyPort.equals(0)) {
-            HttpClientBuilder clientBuilder = HttpClients.custom()
-                .useSystemProperties()
-                .setProxy(new HttpHost(proxyHost, proxyPort, "http"));
-                
-            if (credentials != null) {
-                CredentialsProvider credsProvider = new BasicCredentialsProvider();
-                credsProvider.setCredentials(new AuthScope(proxyHost, proxyPort), credentials);
-                clientBuilder.setDefaultCredentialsProvider(credsProvider);
-                Loggers.SERVER.debug("SlackNotification ::using proxy credentials " + credentials.getUserPrincipal().getName());
-            }
-            
-            this.client = clientBuilder.build();
-		}
-    }
+      Loggers.SERVER.info("SlackNotificationListener :: Preparing message for URL " + url + " using proxy " + this.proxyHost + ":" + this.proxyPort);
+      if (this.filename.length() > 0) {
+        File file = new File(this.filename);
+        throw new NotImplementedException();
+      }
+      if (this.payload != null) {
 
-    public String getBranchDisplayName() {
-        // The actual branch
-        String branchDisplayName = this.payload == null ? "" : this.payload.getBranchDisplayName();
+        List<Attachment> attachments = getAttachments("");
 
-        // when branchDisplayName is not available, we fudge it to be the magic value <default>.
-        if (branchDisplayName == null || branchDisplayName.length() == 0) {
-            Loggers.SERVER.info("SlackNotificationImpl :: getBranchDisplayName :: branchDisplayName is empty, defaults to <default>.");
-            branchDisplayName = "<default>";
-        }
-        return branchDisplayName;
-    }
+        String attachmentsParam = String.format("attachments=%s", URLEncoder.encode(convertAttachmentsToJson(attachments), UTF8));
 
-    public void post() throws IOException {
-        if (getFilterBranchName().equalsIgnoreCase(getBranchDisplayName()) ||
-            getFilterBranchName().equalsIgnoreCase("<default>") && this.payload != null && this.payload.getBranchIsDefault()) {
-            if (getIsApiToken()) {
-                postViaApi();
-            } else {
-                postViaWebHook();
-            }
-        } else {
-            Loggers.SERVER.warn("SlackNotificationImpl :: post :: filterBranchName not applicable, posting to Slack skipped.");
-        }
-    }
+        Loggers.SERVER.info("SlackNotificationListener :: Body message will be " + attachmentsParam);
 
-    private void postViaApi() throws IOException {
-        if ((this.enabled) && (!this.errored)) {
-            if (this.teamName == null) {
-                this.teamName = "";
-            }
-            String url = String.format("https://slack.com/api/chat.postMessage?token=%s&link_names=1&as_user=0&username=%s&icon_url=%s&channel=%s&text=%s&pretty=1",
-                    this.token,
-                    this.botName == null ? "" : URLEncoder.encode(this.botName, UTF8),
-                    this.iconUrl == null ? "" : URLEncoder.encode(this.iconUrl, UTF8),
-                    this.channel == null ? "" : URLEncoder.encode(this.channel, UTF8),
-                    this.payload == null ? "" : URLEncoder.encode(payload.getBuildDescriptionWithLinkSyntax(), UTF8),
-                    "");
-
-            HttpPost httppost = new HttpPost(url);
-
-            Loggers.SERVER.info("SlackNotificationListener :: Preparing message for URL " + url + " using proxy " + this.proxyHost + ":" + this.proxyPort);
-            if (this.filename.length() > 0) {
-                File file = new File(this.filename);
-                throw new NotImplementedException();
-            }
-            if (this.payload != null) {
-
-                List<Attachment> attachments = getAttachments("");
-
-                String attachmentsParam = String.format("attachments=%s", URLEncoder.encode(convertAttachmentsToJson(attachments), UTF8));
-
-                Loggers.SERVER.info("SlackNotificationListener :: Body message will be " + attachmentsParam);
-
-                httppost.setEntity(new StringEntity(attachmentsParam));
-                httppost.setHeader("Content-Type", CONTENT_TYPE);
-            }
-            try {
-                HttpResponse response = client.execute(httppost);
-                this.resultCode = response.getStatusLine().getStatusCode();
-                if (this.resultCode == HttpStatus.SC_OK) {
-                    this.response = PostMessageResponse.fromJson(EntityUtils.toString(response.getEntity()));
-                }
-                if (response.getEntity().getContentLength() > 0) {
-                    this.content = EntityUtils.toString(response.getEntity());
-                }
-            } finally {
-                httppost.releaseConnection();
-            }
-        }
-    }
-
-    private void postViaWebHook() throws IOException {
-        if ((this.enabled) && (!this.errored)) {
-            if (this.teamName == null) {
-                this.teamName = "";
-            }
-
-            String url = "";
-            if(this.token != null && this.token.startsWith("http")){
-                url = this.token;
-            }
-             else {
-                url = String.format("https://%s.slack.com/services/hooks/incoming-webhook?token=%s",
-                        this.teamName.toLowerCase(),
-                        this.token);
-            }
-
-            Loggers.SERVER.info("SlackNotificationListener :: Preparing message for URL " + url);
-
-            WebHookPayload requestBody = new WebHookPayload();
-
-            List<Commit> commits = this.payload.getCommits();
-
-            HashSet<String> usersSentTo = new HashSet<String>();
-            boolean sendToUser;
-
-            //send to default channel if enabled
-            if(sendDefaultChannel){
-                sendToChannel(this.getChannel(), requestBody, url);
-            }
-
-            if(sendUsers){
-                for(Commit commit : commits){
-                    if(commit.hasSlackUserId()){
-                        String slackUser = commit.getSlackUserId();
-                        if(slackUser.charAt(0) != '@'){
-                            slackUser = "@" + slackUser;
-                        }
-
-                        /*Skip sending to the user if the commit was a merge from someone else
-                        * or if they were already sent the message*/
-                        if(!usersSentTo.contains(slackUser) && !isMergeCommit(commit)){
-                            try {
-                                sendToChannel(slackUser, requestBody, url);
-                                usersSentTo.add(slackUser);
-                            }
-                            catch(IOException e){
-                                Loggers.SERVER.warn("SlackNotificationImpl :: Unable to find slack userID :: Unable to send to : " + slackUser);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private boolean isMergeCommit(Commit commit){
-        if(commit.getDescription().contains("Merge pull request") && !commit.getDescription().contains(commit.getUserName())){
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-
-    private void sendToChannel(String channel, WebHookPayload requestBody, String url) throws IOException{
-
-        requestBody.setChannel(channel);
-        requestBody.setUsername(this.getBotName());
-        requestBody.setIcon_url(this.getIconUrl());
-
-        HttpPost httppost = new HttpPost(url);
-
-        if (this.payload != null) {
-            requestBody.setText(payload.getBuildDescriptionWithLinkSyntax());
-            requestBody.setAttachments(getAttachments(channel));
-        }
-
-        String bodyParam = String.format("payload=%s", URLEncoder.encode(requestBody.toJson(), UTF8));
-
-        Loggers.SERVER.info("SlackNotificationListener :: Body message will be " + bodyParam);
-
-        httppost.setEntity(new StringEntity(bodyParam));
+        httppost.setEntity(new StringEntity(attachmentsParam));
         httppost.setHeader("Content-Type", CONTENT_TYPE);
-
-        try {
-            HttpResponse response = client.execute(httppost);
-            this.resultCode = response.getStatusLine().getStatusCode();
-
-            PostMessageResponse resp = new PostMessageResponse();
-
-            if (this.resultCode != HttpStatus.SC_OK) {
-                String error = EntityUtils.toString(response.getEntity());
-                resp.setOk(error == "ok");
-                resp.setError(error);
-            }
-            else{
-                resp.setOk(true);
-                this.response = resp;
-            }
-
-            this.content = EntityUtils.toString(response.getEntity());
-
-        } finally {
-            httppost.releaseConnection();
+      }
+      try {
+        HttpResponse response = client.execute(httppost);
+        this.resultCode = response.getStatusLine().getStatusCode();
+        if (this.resultCode == HttpStatus.SC_OK) {
+          this.response = PostMessageResponse.fromJson(EntityUtils.toString(response.getEntity()));
         }
+        if (response.getEntity().getContentLength() > 0) {
+          this.content = EntityUtils.toString(response.getEntity());
+        }
+      } finally {
+        httppost.releaseConnection();
+      }
+    }
+  }
+
+  private void postViaWebHook() throws IOException {
+    if ((this.enabled) && (!this.errored)) {
+      if (this.teamName == null) {
+        this.teamName = "";
+      }
+
+      String url = "";
+      if (this.token != null && this.token.startsWith("http")) {
+        url = this.token;
+      } else {
+        url = String.format(
+          "https://%s.slack.com/services/hooks/incoming-webhook?token=%s",
+          this.teamName.toLowerCase(),
+          this.token
+        );
+      }
+
+      Loggers.SERVER.info("SlackNotificationListener :: Preparing message for URL " + url);
+
+      WebHookPayload requestBody = new WebHookPayload();
+
+      List<Commit> commits = this.payload.getCommits();
+
+      HashSet<String> usersSentTo = new HashSet<String>();
+      boolean sendToUser;
+
+      //send to default channel if enabled
+      if (sendDefaultChannel) {
+        sendToChannel(this.getChannel(), requestBody, url);
+      }
+
+      if (sendUsers) {
+        for (Commit commit : commits) {
+          if (commit.hasSlackUserId()) {
+            String slackUser = commit.getSlackUserId();
+            if (slackUser.charAt(0) != '@') {
+              slackUser = "@" + slackUser;
+            }
+
+            /*Skip sending to the user if the commit was a merge from someone else
+             * or if they were already sent the message*/
+            if (!usersSentTo.contains(slackUser) && !isMergeCommit(commit)) {
+              try {
+                sendToChannel(slackUser, requestBody, url);
+                usersSentTo.add(slackUser);
+              } catch (IOException e) {
+                Loggers.SERVER.warn("SlackNotificationImpl :: Unable to find slack userID :: Unable to send to : " + slackUser);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private boolean isMergeCommit(Commit commit) {
+    if (commit.getDescription().contains("Merge pull request") && !commit.getDescription().contains(commit.getUserName())) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private void sendToChannel(String channel, WebHookPayload requestBody, String url) throws IOException {
+
+    requestBody.setChannel(channel);
+    requestBody.setUsername(this.getBotName());
+    requestBody.setIcon_url(this.getIconUrl());
+
+    HttpPost httppost = new HttpPost(url);
+
+    if (this.payload != null) {
+      requestBody.setText(payload.getBuildDescriptionWithLinkSyntax());
+      requestBody.setAttachments(getAttachments(channel));
     }
 
-    private List<Attachment> getAttachments(String slackUser) {
-        List<Attachment> attachments = new ArrayList<Attachment>();
-        Attachment attachment = new Attachment(this.payload.getBuildName(), null, null, this.payload.getColor());
+    String bodyParam = String.format("payload=%s", URLEncoder.encode(requestBody.toJson(), UTF8));
 
-        List<String> firstDetailLines = new ArrayList<String>();
-        if(showBuildAgent == null || showBuildAgent){
-            firstDetailLines.add("Agent: " + this.payload.getAgentName());
-        }
-        if(this.payload.getIsComplete() && (showElapsedBuildTime == null || showElapsedBuildTime)){
-            firstDetailLines.add("Elapsed: " + formatTime(this.payload.getElapsedTime()));
-        }
+    Loggers.SERVER.info("SlackNotificationListener :: Body message will be " + bodyParam);
 
-        attachment.addField(this.payload.getBuildName(), StringUtil.join(firstDetailLines, "\n"), false);
+    httppost.setEntity(new StringEntity(bodyParam));
+    httppost.setHeader("Content-Type", CONTENT_TYPE);
 
-        if(showFailureReason && this.payload.getBuildResult() == SlackNotificationPayloadContent.BUILD_STATUS_FAILURE){
-            if(this.payload.getFailedBuildMessages().size() > 0) {
-                attachment.addField("Reason", StringUtil.join(", ", payload.getFailedBuildMessages()), false);
-            }
-            if(this.payload.getFailedTestNames().size() > 0){
-                ArrayList<String> failedTestNames = payload.getFailedTestNames();
-                String truncated = "";
-                if(failedTestNames.size() > 10){
-                    failedTestNames = new ArrayList<String>( failedTestNames.subList(0, 9));
-                    truncated = " (+ " + Integer.toString(payload.getFailedBuildMessages().size() - 10) + " more)";
-                }
-                payload.getFailedTestNames().size();
-                attachment.addField("Failed Tests", StringUtil.join(", ", failedTestNames) + truncated, false);
-            }
-        }
+    try {
+      HttpResponse response = client.execute(httppost);
+      this.resultCode = response.getStatusLine().getStatusCode();
 
-        StringBuilder sbCommits = new StringBuilder();
+      PostMessageResponse resp = new PostMessageResponse();
 
-        //Get commits from the user being sent to
-        //Divided into own section away from rest of commits
-        StringBuilder sbUserCommits = new StringBuilder();
-        int numUserCommits = 0;
-        int numUserCommitsLeft = 0;
-        int numCommitsToAdd = maxCommitsToDisplay;
+      if (this.resultCode != HttpStatus.SC_OK) {
+        String error = EntityUtils.toString(response.getEntity());
+        resp.setOk(error == "ok");
+        resp.setError(error);
+      } else {
+        resp.setOk(true);
+        this.response = resp;
+      }
 
-        List<Commit> commits = this.payload.getCommits();
+      this.content = EntityUtils.toString(response.getEntity());
 
-        List<Commit> commitsToDisplay = new ArrayList<Commit>(commits);
+    } finally {
+      httppost.releaseConnection();
+    }
+  }
 
-        if(showCommits) {
-            boolean truncatedOther = false;
-            boolean truncatedUser = false;
-            int totalCommits = commitsToDisplay.size();
+  private List<Attachment> getAttachments(String slackUser) {
+    List<Attachment> attachments = new ArrayList<Attachment>();
+    Attachment attachment = new Attachment(this.payload.getBuildName(), null, null, this.payload.getColor());
 
-            //determine how many commits were from the user
-            //used to determine how many in "Your commits" and how many in "Commits"
-            for(Commit commit : commitsToDisplay){
-                if(commit.getSlackUserId().equals(slackUser.substring(1))){
-                    numUserCommits++;
-                }
-            }
-            numUserCommitsLeft = numUserCommits;
-
-            if (numUserCommits > maxCommitsToDisplay) {
-                truncatedUser = true;
-            }
-
-            if (totalCommits > maxCommitsToDisplay && totalCommits > numUserCommits) {
-                //commitsToDisplay = commitsToDisplay.subList(0, maxCommitsToDisplay > commitsToDisplay.size() ? commitsToDisplay.size() : 5);
-                truncatedOther = true;
-            }
-
-            for (Commit commit : commitsToDisplay) {
-                String revision = commit.getRevision();
-                revision = revision == null ? "" : revision;
-                if(commit.getSlackUserId().equals(slackUser.substring(1))){
-                    sbUserCommits.append(String.format("%s :: %s :: %s\n", revision.substring(0, Math.min(revision.length(), 10)), commit.getUserName(), commit.getDescription()));
-                    numUserCommitsLeft--;
-                    numCommitsToAdd--;
-                }
-                else{
-                    if(numUserCommitsLeft < numCommitsToAdd){
-                        sbCommits.append(String.format("%s :: %s :: %s\n", revision.substring(0, Math.min(revision.length(), 10)), commit.getUserName(), commit.getDescription()));
-                        numCommitsToAdd--;
-                    }
-                }
-
-                if(numCommitsToAdd == 0){
-                    break;
-                }
-            }
-
-            if (truncatedOther && !truncatedUser) {
-                sbCommits.append(String.format("(+ %d more)\n", totalCommits - maxCommitsToDisplay));
-            }
-
-            if (truncatedUser) {
-                sbUserCommits.append(String.format("(+ %d more)\n", numUserCommits - maxCommitsToDisplay));
-            }
-
-            if (sbUserCommits.length() > 0) {
-                attachment.addField("Your Commits", sbUserCommits.toString(), false);
-            }
-
-            if (sbCommits.length() > 0) {
-                attachment.addField("Commits", sbCommits.toString(), false);
-            }
-            else if(totalCommits > numUserCommits){
-                String otherCommits;
-                if(totalCommits - numUserCommits > 1){
-                    otherCommits = totalCommits - numUserCommits + " more commits were made by others";
-                }
-                else{
-                    otherCommits = "1 more commit was made by others";
-                }
-                attachment.addField(otherCommits, null, false);
-
-            }
-
-
-        }
-
-        List<String> slackUsers = new ArrayList<String>();
-
-
-        for(Commit commit : commits){
-            if(commit.hasSlackUserId()){
-                slackUsers.add("<!" + commit.getSlackUserId() + ">");
-            }
-        }
-        HashSet<String> tempHash = new HashSet<String>(slackUsers);
-        slackUsers = new ArrayList<String>(tempHash);
-
-        if(showCommitters) {
-            Set<String> committers = new HashSet<String>();
-            for (Commit commit : commits) {
-                committers.add(commit.getUserName());
-            }
-
-            String committersString = StringUtil.join(", ", committers);
-
-            if (!commits.isEmpty()) {
-                attachment.addField("Changes By", committersString, false);
-            }
-        }
-        
-        if (showTriggeredBy){
-            attachment.addField("Triggered By", this.payload.getTriggeredBy(), false);
-        }
-
-        // Mention the channel and/or the Slack Username of any committers if known
-        boolean needMentionForFirstFailure = payload.getIsFirstFailedBuild()
-                && (mentionChannelEnabled
-                || mentionHereEnabled
-                || (mentionSlackUserEnabled
-                && !slackUsers.isEmpty()));
-
-        String mentionContent = ":arrow_up: ";
-        if(needMentionForFirstFailure){
-            mentionContent += "\"" + this.payload.getBuildName() + "\" Failed ";
-
-            if(mentionChannelEnabled){
-                mentionContent += "<!channel> ";
-            }
-            if(mentionSlackUserEnabled && !slackUsers.isEmpty() && !this.payload.isMergeBranch()) {
-                mentionContent += StringUtil.join(" ", slackUsers);
-            }
-            if (mentionHereEnabled) {
-                mentionContent += "<!here>";
-            }
-        }
-
-        boolean needMentionForTheOneWhoTriggered = mentionWhoTriggeredEnabled && payload.getTriggeredBySlackUserId() != null;
-        if (needMentionForTheOneWhoTriggered) {
-            mentionContent += "<@" + payload.getTriggeredBySlackUserId() + ">";
-        }
-
-        if (needMentionForFirstFailure || needMentionForTheOneWhoTriggered) {
-            attachment.addField("", mentionContent, true);
-        }
-
-        attachments.add(attachment);
-        return attachments;
+    List<String> firstDetailLines = new ArrayList<String>();
+    if (showBuildAgent == null || showBuildAgent) {
+      firstDetailLines.add("Agent: " + this.payload.getAgentName());
+    }
+    if (this.payload.getIsComplete() && (showElapsedBuildTime == null || showElapsedBuildTime)) {
+      firstDetailLines.add("Elapsed: " + formatTime(this.payload.getElapsedTime()));
     }
 
-    private class WebHookPayload {
-        private String channel;
-        private String username;
-        private String text;
-        private String icon_url;
-        private List<Attachment> attachments;
+    attachment.addField(this.payload.getBuildName(), StringUtil.join(firstDetailLines, "\n"), false);
 
-        public String getChannel() {
-            return channel;
+    if (showFailureReason && this.payload.getBuildResult() == SlackNotificationPayloadContent.BUILD_STATUS_FAILURE) {
+      if (this.payload.getFailedBuildMessages().size() > 0) {
+        attachment.addField("Reason", StringUtil.join(", ", payload.getFailedBuildMessages()), false);
+      }
+      if (this.payload.getFailedTestNames().size() > 0) {
+        ArrayList<String> failedTestNames = payload.getFailedTestNames();
+        String truncated = "";
+        if (failedTestNames.size() > 10) {
+          failedTestNames = new ArrayList<String>(failedTestNames.subList(0, 9));
+          truncated = " (+ " + Integer.toString(payload.getFailedBuildMessages().size() - 10) + " more)";
         }
-
-        public void setChannel(String channel) {
-            this.channel = channel;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public void setText(String text) {
-            this.text = text;
-        }
-
-        public String getIcon_url() {
-            return icon_url;
-        }
-
-        public void setIcon_url(String icon_url) {
-            this.icon_url = icon_url;
-        }
-
-        public List<Attachment> getAttachments() {
-            return attachments;
-        }
-
-        public void setAttachments(List<Attachment> attachments) {
-            this.attachments = attachments;
-        }
-
-        public String toJson() {
-            Gson gson = new Gson();
-            return gson.toJson(this);
-        }
+        payload.getFailedTestNames().size();
+        attachment.addField("Failed Tests", StringUtil.join(", ", failedTestNames) + truncated, false);
+      }
     }
 
-    public static String convertAttachmentsToJson(List<Attachment> attachments) {
-        Gson gson = new Gson();
-        return gson.toJson(attachments);
+    StringBuilder sbCommits = new StringBuilder();
+
+    //Get commits from the user being sent to
+    //Divided into own section away from rest of commits
+    StringBuilder sbUserCommits = new StringBuilder();
+    int numUserCommits = 0;
+    int numUserCommitsLeft = 0;
+    int numCommitsToAdd = maxCommitsToDisplay;
+
+    List<Commit> commits = this.payload.getCommits();
+
+    List<Commit> commitsToDisplay = new ArrayList<Commit>(commits);
+
+    if (showCommits) {
+      boolean truncatedOther = false;
+      boolean truncatedUser = false;
+      int totalCommits = commitsToDisplay.size();
+
+      //determine how many commits were from the user
+      //used to determine how many in "Your commits" and how many in "Commits"
+      for (Commit commit : commitsToDisplay) {
+        if (commit.getSlackUserId().equals(slackUser.substring(1))) {
+          numUserCommits++;
+        }
+      }
+      numUserCommitsLeft = numUserCommits;
+
+      if (numUserCommits > maxCommitsToDisplay) {
+        truncatedUser = true;
+      }
+
+      if (totalCommits > maxCommitsToDisplay && totalCommits > numUserCommits) {
+        //commitsToDisplay = commitsToDisplay.subList(0, maxCommitsToDisplay > commitsToDisplay.size() ? commitsToDisplay.size() : 5);
+        truncatedOther = true;
+      }
+
+      for (Commit commit : commitsToDisplay) {
+        String revision = commit.getRevision();
+        revision = revision == null ? "" : revision;
+        if (commit.getSlackUserId().equals(slackUser.substring(1))) {
+          sbUserCommits.append(String.format("%s :: %s :: %s\n", revision.substring(0, Math.min(revision.length(), 10)), commit.getUserName(), commit.getDescription()));
+          numUserCommitsLeft--;
+          numCommitsToAdd--;
+        } else {
+          if (numUserCommitsLeft < numCommitsToAdd) {
+            sbCommits.append(String.format("%s :: %s :: %s\n", revision.substring(0, Math.min(revision.length(), 10)), commit.getUserName(), commit.getDescription()));
+            numCommitsToAdd--;
+          }
+        }
+
+        if (numCommitsToAdd == 0) {
+          break;
+        }
+      }
+
+      if (truncatedOther && !truncatedUser) {
+        sbCommits.append(String.format("(+ %d more)\n", totalCommits - maxCommitsToDisplay));
+      }
+
+      if (truncatedUser) {
+        sbUserCommits.append(String.format("(+ %d more)\n", numUserCommits - maxCommitsToDisplay));
+      }
+
+      if (sbUserCommits.length() > 0) {
+        attachment.addField("Your Commits", sbUserCommits.toString(), false);
+      }
+
+      if (sbCommits.length() > 0) {
+        attachment.addField("Commits", sbCommits.toString(), false);
+      } else if (totalCommits > numUserCommits) {
+        String otherCommits;
+        if (totalCommits - numUserCommits > 1) {
+          otherCommits = totalCommits - numUserCommits + " more commits were made by others";
+        } else {
+          otherCommits = "1 more commit was made by others";
+        }
+        attachment.addField(otherCommits, null, false);
+
+      }
+
+
+    }
+
+    List<String> slackUsers = new ArrayList<String>();
+
+
+    for (Commit commit : commits) {
+      if (commit.hasSlackUserId()) {
+        slackUsers.add("<!" + commit.getSlackUserId() + ">");
+      }
+    }
+    HashSet<String> tempHash = new HashSet<String>(slackUsers);
+    slackUsers = new ArrayList<String>(tempHash);
+
+    if (showCommitters) {
+      Set<String> committers = new HashSet<String>();
+      for (Commit commit : commits) {
+        committers.add(commit.getUserName());
+      }
+
+      String committersString = StringUtil.join(", ", committers);
+
+      if (!commits.isEmpty()) {
+        attachment.addField("Changes By", committersString, false);
+      }
+    }
+
+    if (showTriggeredBy) {
+      attachment.addField("Triggered By", this.payload.getTriggeredBy(), false);
+    }
+
+    // Mention the channel and/or the Slack Username of any committers if known
+    boolean needMentionForFirstFailure = payload.getIsFirstFailedBuild()
+      && (mentionChannelEnabled
+      || mentionHereEnabled
+      || (mentionSlackUserEnabled
+      && !slackUsers.isEmpty()));
+
+    String mentionContent = ":arrow_up: ";
+    if (needMentionForFirstFailure) {
+      mentionContent += "\"" + this.payload.getBuildName() + "\" Failed ";
+
+      if (mentionChannelEnabled) {
+        mentionContent += "<!channel> ";
+      }
+      if (mentionSlackUserEnabled && !slackUsers.isEmpty() && !this.payload.isMergeBranch()) {
+        mentionContent += StringUtil.join(" ", slackUsers);
+      }
+      if (mentionHereEnabled) {
+        mentionContent += "<!here>";
+      }
+    }
+
+    boolean needMentionForTheOneWhoTriggered = mentionWhoTriggeredEnabled && payload.getTriggeredBySlackUserId() != null;
+    if (needMentionForTheOneWhoTriggered) {
+      mentionContent += "<@" + payload.getTriggeredBySlackUserId() + ">";
+    }
+
+    if (needMentionForFirstFailure || needMentionForTheOneWhoTriggered) {
+      attachment.addField("", mentionContent, true);
+    }
+
+    attachments.add(attachment);
+    return attachments;
+  }
+
+  private class WebHookPayload {
+    private String channel;
+    private String username;
+    private String text;
+    private String icon_url;
+    private List<Attachment> attachments;
+
+    public String getChannel() {
+      return channel;
+    }
+
+    public void setChannel(String channel) {
+      this.channel = channel;
+    }
+
+    public String getUsername() {
+      return username;
+    }
+
+    public void setUsername(String username) {
+      this.username = username;
+    }
+
+    public String getText() {
+      return text;
+    }
+
+    public void setText(String text) {
+      this.text = text;
+    }
+
+    public String getIcon_url() {
+      return icon_url;
+    }
+
+    public void setIcon_url(String icon_url) {
+      this.icon_url = icon_url;
+    }
+
+    public List<Attachment> getAttachments() {
+      return attachments;
+    }
+
+    public void setAttachments(List<Attachment> attachments) {
+      this.attachments = attachments;
+    }
+
+    public String toJson() {
+      Gson gson = new Gson();
+      return gson.toJson(this);
+    }
+  }
+
+  public static String convertAttachmentsToJson(List<Attachment> attachments) {
+    Gson gson = new Gson();
+    return gson.toJson(attachments);
 //        XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
 //        xstream.setMode(XStream.NO_REFERENCES);
 //        xstream.alias("build", Attachment.class);
@@ -571,140 +572,140 @@ public class SlackNotificationImpl implements SlackNotification {
 //         * so strip those out with a regex.
 //         */
 //        return xstream.toXML(attachments).replaceAll("\"@(fallback|text|pretext|color|fields|title|value|short)\": \"(.*)\"", "\"$1\": \"$2\"");
-    }
+  }
 
-    public Integer getStatus() {
-        return this.resultCode;
-    }
+  public Integer getStatus() {
+    return this.resultCode;
+  }
 
-    public String getProxyHost() {
-        return proxyHost;
-    }
+  public String getProxyHost() {
+    return proxyHost;
+  }
 
-    public int getProxyPort() {
-        return proxyPort;
-    }
+  public int getProxyPort() {
+    return proxyPort;
+  }
 
-    public String getTeamName() {
-        return teamName;
-    }
+  public String getTeamName() {
+    return teamName;
+  }
 
-    public void setTeamName(String teamName) {
-        this.teamName = teamName;
-    }
+  public void setTeamName(String teamName) {
+    this.teamName = teamName;
+  }
 
-    public String getToken() {
-        return token;
-    }
+  public String getToken() {
+    return token;
+  }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+  public void setToken(String token) {
+    this.token = token;
+  }
 
-    public String getIconUrl() {
-        return this.iconUrl;
-    }
+  public String getIconUrl() {
+    return this.iconUrl;
+  }
 
-    public void setIconUrl(String iconUrl) {
-        this.iconUrl = iconUrl;
-    }
+  public void setIconUrl(String iconUrl) {
+    this.iconUrl = iconUrl;
+  }
 
-    public String getBotName() {
-        return this.botName;
-    }
+  public String getBotName() {
+    return this.botName;
+  }
 
-    public void setBotName(String botName) {
-        this.botName = botName;
-    }
+  public void setBotName(String botName) {
+    this.botName = botName;
+  }
 
-    public String getChannel() {
-        return channel;
-    }
+  public String getChannel() {
+    return channel;
+  }
 
-    public void setChannel(String channel) {
-        this.channel = channel;
-    }
+  public void setChannel(String channel) {
+    this.channel = channel;
+  }
 
-    public String getParameterisedUrl() {
-        //TODO: Implement different url logic
-        return this.channel + this.parametersAsQueryString();
-    }
+  public String getParameterisedUrl() {
+    //TODO: Implement different url logic
+    return this.channel + this.parametersAsQueryString();
+  }
 
-    public String parametersAsQueryString() {
-        String s = "";
-        for (Iterator<NameValuePair> i = this.params.iterator(); i.hasNext(); ) {
-            NameValuePair nv = i.next();
-            s += "&" + nv.getName() + "=" + nv.getValue();
-        }
-        if (s.length() > 0) {
-            return "?" + s.substring(1);
-        }
-        return s;
+  public String parametersAsQueryString() {
+    String s = "";
+    for (Iterator<NameValuePair> i = this.params.iterator(); i.hasNext(); ) {
+      NameValuePair nv = i.next();
+      s += "&" + nv.getName() + "=" + nv.getValue();
     }
+    if (s.length() > 0) {
+      return "?" + s.substring(1);
+    }
+    return s;
+  }
 
-    public void addParam(String key, String value) {
-        this.params.add(new BasicNameValuePair(key, value));
-    }
+  public void addParam(String key, String value) {
+    this.params.add(new BasicNameValuePair(key, value));
+  }
 
-    public void addParams(List<NameValuePair> paramsList) {
-        for (Iterator<NameValuePair> i = paramsList.iterator(); i.hasNext(); ) {
-            this.params.add(i.next());
-        }
+  public void addParams(List<NameValuePair> paramsList) {
+    for (Iterator<NameValuePair> i = paramsList.iterator(); i.hasNext(); ) {
+      this.params.add(i.next());
     }
+  }
 
-    public String getParam(String key) {
-        for (Iterator<NameValuePair> i = this.params.iterator(); i.hasNext(); ) {
-            NameValuePair nv = i.next();
-            if (nv.getName().equals(key)) {
-                return nv.getValue();
-            }
-        }
-        return "";
+  public String getParam(String key) {
+    for (Iterator<NameValuePair> i = this.params.iterator(); i.hasNext(); ) {
+      NameValuePair nv = i.next();
+      if (nv.getName().equals(key)) {
+        return nv.getValue();
+      }
     }
+    return "";
+  }
 
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
+  public void setFilename(String filename) {
+    this.filename = filename;
+  }
 
-    public String getFilename() {
-        return filename;
-    }
+  public String getFilename() {
+    return filename;
+  }
 
-    public String getContent() {
-        return content;
-    }
+  public String getContent() {
+    return content;
+  }
 
-    public Boolean isEnabled() {
-        return enabled;
-    }
+  public Boolean isEnabled() {
+    return enabled;
+  }
 
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
+  public void setEnabled(Boolean enabled) {
+    this.enabled = enabled;
+  }
 
-    public void setEnabled(String enabled) {
-        if ("true".equals(enabled.toLowerCase())) {
-            this.enabled = true;
-        } else {
-            this.enabled = false;
-        }
+  public void setEnabled(String enabled) {
+    if ("true".equals(enabled.toLowerCase())) {
+      this.enabled = true;
+    } else {
+      this.enabled = false;
     }
+  }
 
-    public Boolean isErrored() {
-        return errored;
-    }
+  public Boolean isErrored() {
+    return errored;
+  }
 
-    public void setErrored(Boolean errored) {
-        this.errored = errored;
-    }
+  public void setErrored(Boolean errored) {
+    this.errored = errored;
+  }
 
-    public String getErrorReason() {
-        return errorReason;
-    }
+  public String getErrorReason() {
+    return errorReason;
+  }
 
-    public void setErrorReason(String errorReason) {
-        this.errorReason = errorReason;
-    }
+  public void setErrorReason(String errorReason) {
+    this.errorReason = errorReason;
+  }
 
 //	public Integer getEventListBitMask() {
 //		return EventListBitMask;
@@ -714,141 +715,142 @@ public class SlackNotificationImpl implements SlackNotification {
 //		EventListBitMask = triggerStateBitMask;
 //	}
 
-    public String getProxyUsername() {
-        return proxyUsername;
-    }
+  public String getProxyUsername() {
+    return proxyUsername;
+  }
 
-    public void setProxyUsername(String proxyUsername) {
-        this.proxyUsername = proxyUsername;
-    }
+  public void setProxyUsername(String proxyUsername) {
+    this.proxyUsername = proxyUsername;
+  }
 
-    public String getProxyPassword() {
-        return proxyPassword;
-    }
+  public String getProxyPassword() {
+    return proxyPassword;
+  }
 
-    public void setProxyPassword(String proxyPassword) {
-        this.proxyPassword = proxyPassword;
-    }
+  public void setProxyPassword(String proxyPassword) {
+    this.proxyPassword = proxyPassword;
+  }
 
-    public SlackNotificationPayloadContent getPayload() {
-        return payload;
-    }
+  public SlackNotificationPayloadContent getPayload() {
+    return payload;
+  }
 
-    public void setPayload(SlackNotificationPayloadContent payloadContent) {
-        this.payload = payloadContent;
-    }
+  public void setPayload(SlackNotificationPayloadContent payloadContent) {
+    this.payload = payloadContent;
+  }
 
-    @Override
-    public BuildState getBuildStates() {
-        return states;
-    }
+  @Override
+  public BuildState getBuildStates() {
+    return states;
+  }
 
-    @Override
-    public void setBuildStates(BuildState states) {
-        this.states = states;
-    }
+  @Override
+  public void setBuildStates(BuildState states) {
+    this.states = states;
+  }
 
-    public PostMessageResponse getResponse() {
-        return response;
-    }
+  public PostMessageResponse getResponse() {
+    return response;
+  }
 
-    @Override
-    public void setShowBuildAgent(Boolean showBuildAgent) {
-        this.showBuildAgent = showBuildAgent;
-    }
+  @Override
+  public void setShowBuildAgent(Boolean showBuildAgent) {
+    this.showBuildAgent = showBuildAgent;
+  }
 
-    @Override
-    public void setShowElapsedBuildTime(Boolean showElapsedBuildTime) {
-        this.showElapsedBuildTime = showElapsedBuildTime;
-    }
+  @Override
+  public void setShowElapsedBuildTime(Boolean showElapsedBuildTime) {
+    this.showElapsedBuildTime = showElapsedBuildTime;
+  }
 
-    @Override
-    public void setShowCommits(boolean showCommits) {
-        this.showCommits = showCommits;
-    }
+  @Override
+  public void setShowCommits(boolean showCommits) {
+    this.showCommits = showCommits;
+  }
 
-    @Override
-    public void setShowCommitters(boolean showCommitters) {
-        this.showCommitters = showCommitters;
-    }
+  @Override
+  public void setShowCommitters(boolean showCommitters) {
+    this.showCommitters = showCommitters;
+  }
 
-    public void setFilterBranchName(String filterBranchName) {
-        this.filterBranchName = filterBranchName;
-    }
+  public void setFilterBranchName(String filterBranchName) {
+    this.filterBranchName = filterBranchName;
+  }
 
-    public String getFilterBranchName() {
-        if (this.filterBranchName == null || this.filterBranchName.isEmpty()){
-            setFilterBranchName("<default>");
-            Loggers.SERVER.info("SlackNotification :: filterBranchName is empty, defaults to <default>.");
-        }
-        return this.filterBranchName;
+  public String getFilterBranchName() {
+    if (this.filterBranchName == null || this.filterBranchName.isEmpty()) {
+      setFilterBranchName("<default>");
+      Loggers.SERVER.info("SlackNotification :: filterBranchName is empty, defaults to <default>.");
     }
+    return this.filterBranchName;
+  }
 
-    @Override
-    public void setShowTriggeredBy(boolean showTriggeredBy) {
-        this.showTriggeredBy = showTriggeredBy;
-    }
+  @Override
+  public void setShowTriggeredBy(boolean showTriggeredBy) {
+    this.showTriggeredBy = showTriggeredBy;
+  }
 
-    @Override
-    public void setMaxCommitsToDisplay(int maxCommitsToDisplay) {
-        this.maxCommitsToDisplay = maxCommitsToDisplay;
-    }
+  @Override
+  public void setMaxCommitsToDisplay(int maxCommitsToDisplay) {
+    this.maxCommitsToDisplay = maxCommitsToDisplay;
+  }
 
-    @Override
-    public void setMentionChannelEnabled(boolean mentionChannelEnabled) {
-        this.mentionChannelEnabled = mentionChannelEnabled;
-    }
+  @Override
+  public void setMentionChannelEnabled(boolean mentionChannelEnabled) {
+    this.mentionChannelEnabled = mentionChannelEnabled;
+  }
 
-    @Override
-    public void setMentionSlackUserEnabled(boolean mentionSlackUserEnabled) {
-        this.mentionSlackUserEnabled = mentionSlackUserEnabled;
-    }
+  @Override
+  public void setMentionSlackUserEnabled(boolean mentionSlackUserEnabled) {
+    this.mentionSlackUserEnabled = mentionSlackUserEnabled;
+  }
 
-    @Override
-    public void setMentionHereEnabled(boolean mentionHereEnabled) {
-        this.mentionHereEnabled = mentionHereEnabled;
-    }
+  @Override
+  public void setMentionHereEnabled(boolean mentionHereEnabled) {
+    this.mentionHereEnabled = mentionHereEnabled;
+  }
 
-    @Override
-    public void setShowFailureReason(boolean showFailureReason) {
-        this.showFailureReason = showFailureReason;
-    }
+  @Override
+  public void setShowFailureReason(boolean showFailureReason) {
+    this.showFailureReason = showFailureReason;
+  }
 
-    public boolean isMentionWhoTriggeredEnabled() {
-        return mentionWhoTriggeredEnabled;
-    }
+  public boolean isMentionWhoTriggeredEnabled() {
+    return mentionWhoTriggeredEnabled;
+  }
 
-    @Override
-    public void setMentionWhoTriggeredEnabled(boolean mentionWhoTriggeredEnabled) {
-        this.mentionWhoTriggeredEnabled = mentionWhoTriggeredEnabled;
-    }
+  @Override
+  public void setMentionWhoTriggeredEnabled(boolean mentionWhoTriggeredEnabled) {
+    this.mentionWhoTriggeredEnabled = mentionWhoTriggeredEnabled;
+  }
 
-    @Override
-    public void setSendDefaultChannel(boolean sendDefaultChannel){
-        this.sendDefaultChannel = sendDefaultChannel;
-    }
+  @Override
+  public void setSendDefaultChannel(boolean sendDefaultChannel) {
+    this.sendDefaultChannel = sendDefaultChannel;
+  }
 
-    @Override
-    public void setSendUsers(boolean sendUsers){
-        this.sendUsers = sendUsers;
-    }
+  @Override
+  public void setSendUsers(boolean sendUsers) {
+    this.sendUsers = sendUsers;
+  }
 
-    public boolean getIsApiToken() {
-        if(this.token != null && this.token.startsWith("http")){
-            // We now accept a webhook url.
-            return false;
-        }
-        return this.token == null || this.token.split("-").length > 1;
+  public boolean getIsApiToken() {
+    if (this.token != null && this.token.startsWith("http")) {
+      // We now accept a webhook url.
+      return false;
     }
+    return this.token == null || this.token.split("-").length > 1;
+  }
 
-    private String formatTime(long seconds){
-        if(seconds < 60){
-            return seconds + "s";
-        }
-        return String.format("%dm:%ds",
-                TimeUnit.SECONDS.toMinutes(seconds),
-                TimeUnit.SECONDS.toSeconds(seconds) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(seconds))
-        );
+  private String formatTime(long seconds) {
+    if (seconds < 60) {
+      return seconds + "s";
     }
+    return String.format(
+      "%dm:%ds",
+      TimeUnit.SECONDS.toMinutes(seconds),
+      TimeUnit.SECONDS.toSeconds(seconds) -
+        TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(seconds))
+    );
+  }
 }

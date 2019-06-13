@@ -2,6 +2,7 @@ package slacknotifications.teamcity.extension;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import jetbrains.buildServer.serverSide.SBuildServer;
@@ -27,7 +28,7 @@ public class SlackNotificationDMTests {
   SlackNotifierSettingsController controller;
 
   @Before
-  public void initializeConfigs(){
+  public void initializeConfigs() {
     String expectedConfigDirectory = ".";
     ServerPaths serverPaths = mock(ServerPaths.class);
     when(serverPaths.getConfigDir()).thenReturn(expectedConfigDirectory);
@@ -39,10 +40,11 @@ public class SlackNotificationDMTests {
 
     controller = new SlackNotifierSettingsController(
       sBuildServer, serverPaths, webControllerManager,
-      config, payloadManager, pluginDescriptor);
+      config, payloadManager, pluginDescriptor
+    );
   }
 
-  private SlackNotification sendMock(boolean sendChannel){
+  private SlackNotification sendMock(boolean sendChannel) {
     SlackNotification notification = controller.createMockNotification(
       "tamr",
       "#teamcity_slack_tests",
@@ -62,11 +64,11 @@ public class SlackNotificationDMTests {
       null,
       null,
       sendChannel,
-      true);
+      true
+    );
 
     return notification;
   }
-
 
 
   @Test
@@ -89,7 +91,8 @@ public class SlackNotificationDMTests {
       "master",
       false,
       true,
-      null, null, null, null, true, false);
+      null, null, null, null, true, false
+    );
 
     assertNotNull(notification);
   }

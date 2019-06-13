@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>petegoo.teamcity.plugins.tcslacknotifications</groupId>
@@ -47,13 +48,13 @@
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
-                <execution>
-                    <id>auto-clean</id>
-                    <phase>initialize</phase>
-                    <goals>
-                    <goal>clean</goal>
-                    </goals>
-                </execution>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -88,7 +89,8 @@
                 <version>0.2</version>
                 <configuration>
                     <teamcityDir>servers/${teamcity-version}</teamcityDir>
-                    <pluginPackageName>${project.artifactId}-${project.version}.zip</pluginPackageName>
+                    <pluginPackageName>${project.artifactId}-${project.version}.zip
+                    </pluginPackageName>
                 </configuration>
             </plugin>
 
@@ -101,7 +103,9 @@
                             <tasks>
                                 <echo message=" - Copy artefact zip to root target/ folder"/>
                                 <copy failonerror="false" todir="${project.build.directory}">
-                                    <fileset dir="${project.basedir}/tcslackbuildnotifier-web-ui/target/" erroronmissingdir="false">
+                                    <fileset
+                                            dir="${project.basedir}/tcslackbuildnotifier-web-ui/target/"
+                                            erroronmissingdir="false">
                                         <include name="*.zip"/>
                                     </fileset>
                                 </copy>
@@ -117,25 +121,25 @@
     </build>
     <reporting>
         <plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.0.1</version>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.0.1</version>
+            </plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.1</version>
-			</plugin>
-			
-			<plugin>
-        		<groupId>org.codehaus.mojo</groupId>
-        		<artifactId>cobertura-maven-plugin</artifactId>
-      		</plugin>
-			
-		</plugins>
-	</reporting>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.1</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </reporting>
 
     <repositories>
         <repository>

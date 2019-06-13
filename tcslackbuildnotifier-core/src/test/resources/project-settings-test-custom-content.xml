@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-  <slackNotifications enabled="true">
-    <slackNotification token="hook.slack.com" channel="http://localhost/test" enabled="true" format="nvpairs">
-      <states>
-        <state type="buildStarted" enabled="true" />
-      </states>
-        <content iconUrl="http://my.url.com/my-icon.png"
-                 botName="TeamCity2"
-                 showBuildAgent="true"
-                 showElapsedBuildTime="true"
-                 showCommits="true"
-                 showCommitters="true"
-                 showTriggeredBy="true"
-                 maxCommitsToDisplay="20"
-                showFailureReason="true"/>
-    </slackNotification>
-  </slackNotifications>
+    <slackNotifications enabled="true">
+        <slackNotification token="hook.slack.com" channel="http://localhost/test" enabled="true"
+                           format="nvpairs">
+            <states>
+                <state type="buildStarted" enabled="true"/>
+            </states>
+            <content iconUrl="http://my.url.com/my-icon.png"
+                     botName="TeamCity2"
+                     showBuildAgent="true"
+                     showElapsedBuildTime="true"
+                     showCommits="true"
+                     showCommitters="true"
+                     showTriggeredBy="true"
+                     maxCommitsToDisplay="20"
+                     showFailureReason="true"/>
+        </slackNotification>
+    </slackNotifications>
 </settings>
 
