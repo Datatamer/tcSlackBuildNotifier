@@ -35,6 +35,7 @@ import slacknotifications.SlackNotification;
 import slacknotifications.SlackNotificationImpl;
 import slacknotifications.teamcity.payload.SlackNotificationPayloadManager;
 import slacknotifications.teamcity.payload.content.PostMessageResponse;
+import slacknotifications.teamcity.payload.content.SlackNotificationPayloadContent;
 import slacknotifications.teamcity.settings.SlackNotificationMainSettings;
 import slacknotifications.teamcity.settings.SlackNotificationProjectSettings;
 
@@ -141,7 +142,7 @@ public class SlackNotificationListenerTest {
 	    BuildState buildState = new BuildState();
 	    SlackNotificationMainSettings mainSettings = new SlackNotificationMainSettings(sBuildServer, serverPaths);
 	    mainSettings.readFrom(getFullConfigElement());
-	    SlackNotificationConfig config = new SlackNotificationConfig("", "#general", "teamName", "<default>", true, buildState, true, true, null, true, true, true, true, true, true);
+	    SlackNotificationConfig config = new SlackNotificationConfig("", "#teamcity_slack_tests", "teamName", "<default>", true, buildState, true, true, null, true, true, true, true, true, true);
 	    SlackNotificationListener whl = new SlackNotificationListener(sBuildServer, settings, mainSettings, manager, factory);
 	    
 	    whl.getFromConfig(slackNotificationImpl, config);
@@ -176,7 +177,6 @@ public class SlackNotificationListenerTest {
 		projSettings.addNewSlackNotification("", "project1", "my-channel", "myteam", "", true, state, true, true, new HashSet<String>(), true, true, true, true, true, true);
 		when(slacknotification.isEnabled()).thenReturn(state.allEnabled());
 		when(buildHistory.getEntriesBefore(sRunningBuild, false)).thenReturn(finishedSuccessfulBuilds);
-		
 		whl.buildStarted(sRunningBuild);
 		verify(factory.getSlackNotification(), times(1)).post();
 	}
@@ -248,6 +248,25 @@ public class SlackNotificationListenerTest {
 		
 		when(settings.getSettings(sRunningBuild.getProjectId(), "slackNotifications")).thenReturn(projSettings);
 		
+		MockSProject sProject = new MockSProject("Test Project", "A test project", "project1", "ATestProject", sBuildType);
+		sBuildType.setProject(sProject);
+		SlackNotificationListener whl = new SlackNotificationListener(sBuildServer, settings,configSettings, manager, factory);
+		Status oldStatus = Status.NORMAL;
+		Status newStatus = Status.FAILURE;
+		whl.register();
+		whl.buildChangedStatus(sRunningBuild, oldStatus, newStatus);
+		verify(factory.getSlackNotification(), times(0)).post();
+	}
+
+	@Test
+	public void messageSendWhenStatusChangesTest() throws IOException{
+		MockSBuildType sBuildType = new MockSBuildType("Test Build", "A Test Build", "bt1");
+		sBuildType.setProject(sProject);
+		String triggeredBy = "SubVersion";
+		MockSRunningBuild sRunningBuild = new MockSRunningBuild(sBuildType, triggeredBy, Status.NORMAL, "Running", "TestBuild01");
+
+		when(settings.getSettings(sRunningBuild.getProjectId(), "slackNotifications")).thenReturn(projSettings);
+
 		MockSProject sProject = new MockSProject("Test Project", "A test project", "project1", "ATestProject", sBuildType);
 		sBuildType.setProject(sProject);
 		SlackNotificationListener whl = new SlackNotificationListener(sBuildServer, settings,configSettings, manager, factory);

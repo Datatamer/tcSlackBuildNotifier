@@ -216,22 +216,21 @@ public class SlackNotificationConfigTest {
     	assertTrue(slacknotificationDMEnabledDefaultDisabled.getMentionHereEnabled());
 		}
 
-	@Test
-	public void changeConfigWithDMEnabled(){
-    SlackNotificationProjectSettings settings = new SlackNotificationProjectSettings();
-    settings.readFrom(slacknotificationDMEnabledDefaultDisabled.getAsElement());
+		@Test
+		public void changeConfigWithDMEnabled(){
+    	SlackNotificationProjectSettings settings = new SlackNotificationProjectSettings();
+    	settings.readFrom(slacknotificationDMEnabledDefaultDisabled.getAsElement());
+			assertTrue(slacknotificationDMEnabledDefaultDisabled.getSendUsers());
+			assertFalse(slacknotificationDMEnabledDefaultDisabled.getSendDefaultChannel());
+			BuildState state = new BuildState().setAllEnabled();
 
-		assertTrue(slacknotificationDMEnabledDefaultDisabled.getSendUsers());
-		assertFalse(slacknotificationDMEnabledDefaultDisabled.getSendDefaultChannel());
-		BuildState state = new BuildState().setAllEnabled();
+			settings.updateSlackNotification("1", "1", "#general", "Steve",
+																			 "master", false, state, false, false,
+																			 new HashSet<String>(), false, false,
+																			 false, false, slacknotificationDMEnabledDefaultDisabled.getContent(), true, false);
 
-		settings.updateSlackNotification("1", "1", "#general", "Steve",
-																		 "master", false, state, false, false,
-																		 new HashSet<String>(), false, false,
-																		 false, false, slacknotificationDMEnabledDefaultDisabled.getContent(), true, false);
-
-		assertTrue(slacknotificationDMEnabledDefaultDisabled.getSendUsers());
-		assertFalse(slacknotificationDMEnabledDefaultDisabled.getSendDefaultChannel());
-	}
+			assertTrue(slacknotificationDMEnabledDefaultDisabled.getSendUsers());
+			assertFalse(slacknotificationDMEnabledDefaultDisabled.getSendDefaultChannel());
+		}
 
 }

@@ -244,7 +244,7 @@ public class SlackNotificationImpl implements SlackNotification {
 
             List<Commit> commits = this.payload.getCommits();
 
-            List<String> usersSentTo = new ArrayList<String>();
+            HashSet<String> usersSentTo = new HashSet<String>();
             boolean sendToUser;
 
             //send to default channel if enabled
@@ -253,41 +253,36 @@ public class SlackNotificationImpl implements SlackNotification {
             }
 
             if(sendUsers){
-                String slackUser;
                 for(Commit commit : commits){
                     if(commit.hasSlackUserId()){
-                        sendToUser = true;
-                        slackUser = commit.getSlackUserId();
+                        String slackUser = commit.getSlackUserId();
+                        if(slackUser.charAt(0) != '@'){
+                            slackUser = "@" + slackUser;
+                        }
 
                         /*Skip sending to the user if the commit was a merge from someone else
                         * or if they were already sent the message*/
-                        for(String user : usersSentTo){
-                            if(user.equals(slackUser)){
-                                sendToUser = false;
-                                break;
-                            }
-                        }
-                        if(sendToUser){
-                            if(commit.getDescription().contains("Merge pull request") && !commit.getDescription().contains(commit.getUserName())){
-                                sendToUser = false;
-                            }
-                        }
-
-                        if(sendToUser){
-                            if(slackUser.charAt(0) != '@'){
-                                slackUser = "@" + slackUser;
-                            }
+                        if(!usersSentTo.contains(slackUser) && !isMergeCommit(commit)){
                             try {
-                                usersSentTo.add(slackUser.substring(1));
                                 sendToChannel(slackUser, requestBody, url);
+                                usersSentTo.add(slackUser);
                             }
                             catch(IOException e){
-                                //failed to find slack user ID
+                                Loggers.SERVER.warn("SlackNotificationImpl :: Unable to find slack userID :: Unable to send to : " + slackUser);
                             }
                         }
                     }
                 }
             }
+        }
+    }
+
+    private boolean isMergeCommit(Commit commit){
+        if(commit.getDescription().contains("Merge pull request") && !commit.getDescription().contains(commit.getUserName())){
+            return true;
+        }
+        else{
+            return false;
         }
     }
 
@@ -367,7 +362,7 @@ public class SlackNotificationImpl implements SlackNotification {
         StringBuilder sbCommits = new StringBuilder();
 
         //Get commits from the user being sent to
-        //Divded into own section away from rest of commits
+        //Divided into own section away from rest of commits
         StringBuilder sbUserCommits = new StringBuilder();
         int numUserCommits = 0;
         int numUserCommitsLeft = 0;

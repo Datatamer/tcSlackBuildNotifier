@@ -234,20 +234,20 @@ public class SlackNotificationConfig {
      * @param states
      */
     public SlackNotificationConfig(String token,
-								   String channel,
-								   String teamName,
-								   String filterBranchName,
-								   Boolean enabled,
-								   BuildState states,
-								   boolean buildTypeAllEnabled,
-								   boolean buildTypeSubProjects,
-								   Set<String> enabledBuildTypes,
-								   boolean mentionChannelEnabled,
-								   boolean mentionSlackUserEnabled,
-								   boolean mentionHereEnabled,
-								   boolean mentionWhoTriggeredEnabled,
-									 boolean sendDefaultChannel,
-									 boolean sendUsers) {
+																	 String channel,
+																	 String teamName,
+																	 String filterBranchName,
+																	 Boolean enabled,
+																	 BuildState states,
+																	 boolean buildTypeAllEnabled,
+																	 boolean buildTypeSubProjects,
+																	 Set<String> enabledBuildTypes,
+																	 boolean mentionChannelEnabled,
+																	 boolean mentionSlackUserEnabled,
+																	 boolean mentionHereEnabled,
+																	 boolean mentionWhoTriggeredEnabled,
+																	 boolean sendDefaultChannel,
+																	 boolean sendUsers) {
         this.content = new SlackNotificationContentConfig();
         int Min = 1000000, Max = 1000000000;
         Integer Rand = Min + (int) (Math.random() * ((Max - Min) + 1));
@@ -262,11 +262,11 @@ public class SlackNotificationConfig {
         this.subProjectsEnabled = buildTypeSubProjects;
         this.allBuildTypesEnabled = buildTypeAllEnabled;
         this.setMentionChannelEnabled(mentionChannelEnabled);
-		this.setMentionSlackUserEnabled(mentionSlackUserEnabled);
-		this.setMentionHereEnabled(mentionHereEnabled);
-		this.setMentionWhoTriggeredEnabled(mentionWhoTriggeredEnabled);
-		this.setSendDefaultChannel(sendDefaultChannel);
-		this.setSendUsers(sendUsers);
+				this.setMentionSlackUserEnabled(mentionSlackUserEnabled);
+				this.setMentionHereEnabled(mentionHereEnabled);
+				this.setMentionWhoTriggeredEnabled(mentionWhoTriggeredEnabled);
+				this.setSendDefaultChannel(sendDefaultChannel);
+				this.setSendUsers(sendUsers);
 
         if (!this.allBuildTypesEnabled) {
             this.enabledBuildTypesSet = enabledBuildTypes;

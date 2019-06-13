@@ -57,7 +57,12 @@ public class SlackNotificationDMTests {
       "master",
       false,
       true,
-      null, null, null, null, sendChannel, true);
+      null,
+      null,
+      null,
+      null,
+      sendChannel,
+      true);
 
     return notification;
   }
