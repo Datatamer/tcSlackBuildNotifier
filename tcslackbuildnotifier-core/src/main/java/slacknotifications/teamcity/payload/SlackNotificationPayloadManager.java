@@ -14,109 +14,113 @@ import java.util.Collection;
 
 public class SlackNotificationPayloadManager {
 
-    private static final String NOBODY = "nobody";
-	SBuildServer server;
+  private static final String NOBODY = "nobody";
+  SBuildServer server;
 
-    public SlackNotificationPayloadManager(SBuildServer server){
-        this.server = server;
-        Loggers.SERVER.info("SlackNotificationPayloadManager :: Starting");
+  public SlackNotificationPayloadManager(SBuildServer server) {
+    this.server = server;
+    Loggers.SERVER.info("SlackNotificationPayloadManager :: Starting");
+  }
+
+
+  public SlackNotificationPayloadContent beforeBuildFinish(SRunningBuild runningBuild, SFinishedBuild previousBuild) {
+    SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, runningBuild, previousBuild, BuildStateEnum.BEFORE_BUILD_FINISHED);
+    return content;
+  }
+
+
+  public SlackNotificationPayloadContent buildFinished(SRunningBuild runningBuild, SFinishedBuild previousBuild) {
+    SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, runningBuild, previousBuild, BuildStateEnum.BUILD_FINISHED);
+    return content;
+  }
+
+  public SlackNotificationPayloadContent buildInterrupted(SRunningBuild runningBuild, SFinishedBuild previousBuild) {
+    SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, runningBuild, previousBuild, BuildStateEnum.BUILD_INTERRUPTED);
+    return content;
+  }
+
+  public SlackNotificationPayloadContent buildStarted(SRunningBuild runningBuild, SFinishedBuild previousBuild) {
+    SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, runningBuild, previousBuild, BuildStateEnum.BUILD_STARTED);
+    return content;
+  }
+
+  /**
+   * Used by versions of TeamCity less than 7.0
+   */
+  public SlackNotificationPayloadContent responsibleChanged(SBuildType buildType,
+                                                            ResponsibilityInfo responsibilityInfoOld,
+                                                            ResponsibilityInfo responsibilityInfoNew, boolean isUserAction) {
+
+    SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, buildType, BuildStateEnum.RESPONSIBILITY_CHANGED);
+    String oldUser = NOBODY;
+    String newUser = NOBODY;
+    try {
+      oldUser = responsibilityInfoOld.getResponsibleUser().getDescriptiveName();
+    } catch (Exception e) {
+    }
+    try {
+      newUser = responsibilityInfoNew.getResponsibleUser().getDescriptiveName();
+    } catch (Exception e) {
+    }
+
+    content.setText(buildType.getFullName()
+                      + " changed responsibility from "
+                      + oldUser
+                      + " to "
+                      + newUser
+                      + " with comment '"
+                      + responsibilityInfoNew.getComment().trim()
+                      + "'"
+    );
+
+    return content;
+  }
+
+  /**
+   * Used by versions of TeamCity 7.0 and above
+   */
+  public SlackNotificationPayloadContent responsibleChanged(SBuildType buildType,
+                                                            ResponsibilityEntry responsibilityEntryOld,
+                                                            ResponsibilityEntry responsibilityEntryNew) {
+
+    SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, buildType, BuildStateEnum.RESPONSIBILITY_CHANGED);
+    String oldUser = NOBODY;
+    String newUser = NOBODY;
+    if (responsibilityEntryOld.getState() != ResponsibilityEntry.State.NONE) {
+      oldUser = responsibilityEntryOld.getResponsibleUser().getDescriptiveName();
+    }
+    if (responsibilityEntryNew.getState() != ResponsibilityEntry.State.NONE) {
+      newUser = responsibilityEntryNew.getResponsibleUser().getDescriptiveName();
     }
 
 
-    public SlackNotificationPayloadContent beforeBuildFinish(SRunningBuild runningBuild, SFinishedBuild previousBuild) {
-        SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, runningBuild, previousBuild, BuildStateEnum.BEFORE_BUILD_FINISHED);
-        return content;
-    }
+    content.setText(buildType.getFullName().trim()
+                      + " changed responsibility from "
+                      + oldUser
+                      + " to "
+                      + newUser
+                      + " with comment '"
+                      + responsibilityEntryNew.getComment().trim()
+                      + "'"
+    );
 
+    return content;
+  }
 
-    public SlackNotificationPayloadContent buildFinished(SRunningBuild runningBuild, SFinishedBuild previousBuild) {
-        SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, runningBuild, previousBuild, BuildStateEnum.BUILD_FINISHED);
-        return content;
-    }
+  public SlackNotificationPayloadContent responsibleChanged(SProject project,
+                                                            TestNameResponsibilityEntry oldTestNameResponsibilityEntry,
+                                                            TestNameResponsibilityEntry newTestNameResponsibilityEntry,
+                                                            boolean isUserAction) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    public SlackNotificationPayloadContent buildInterrupted(SRunningBuild runningBuild, SFinishedBuild previousBuild) {
-        SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, runningBuild, previousBuild, BuildStateEnum.BUILD_INTERRUPTED);
-        return content;
-    }
-
-    public SlackNotificationPayloadContent buildStarted(SRunningBuild runningBuild, SFinishedBuild previousBuild) {
-        SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, runningBuild, previousBuild, BuildStateEnum.BUILD_STARTED);
-        return content;
-    }
-
-    /** Used by versions of TeamCity less than 7.0
-     */
-    public SlackNotificationPayloadContent responsibleChanged(SBuildType buildType,
-                                     ResponsibilityInfo responsibilityInfoOld,
-                                     ResponsibilityInfo responsibilityInfoNew, boolean isUserAction) {
-
-        SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, buildType, BuildStateEnum.RESPONSIBILITY_CHANGED);
-        String oldUser = NOBODY;
-        String newUser = NOBODY;
-        try {
-            oldUser = responsibilityInfoOld.getResponsibleUser().getDescriptiveName();
-        } catch (Exception e) {}
-        try {
-            newUser = responsibilityInfoNew.getResponsibleUser().getDescriptiveName();
-        } catch (Exception e) {}
-
-        content.setText(buildType.getFullName() 
-                        + " changed responsibility from "
-                        + oldUser
-                        + " to "
-                        + newUser
-                        + " with comment '"
-                        + responsibilityInfoNew.getComment().trim()
-                        + "'"
-        );
-
-        return content;
-    }
-
-    /** Used by versions of TeamCity 7.0 and above
-     */
-    public SlackNotificationPayloadContent responsibleChanged(SBuildType buildType,
-                                     ResponsibilityEntry responsibilityEntryOld,
-                                     ResponsibilityEntry responsibilityEntryNew) {
-
-        SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, buildType, BuildStateEnum.RESPONSIBILITY_CHANGED);
-        String oldUser = NOBODY;
-        String newUser = NOBODY;
-        if (responsibilityEntryOld.getState() != ResponsibilityEntry.State.NONE) {
-            oldUser = responsibilityEntryOld.getResponsibleUser().getDescriptiveName();
-        }
-        if (responsibilityEntryNew.getState() != ResponsibilityEntry.State.NONE) {
-            newUser = responsibilityEntryNew.getResponsibleUser().getDescriptiveName();
-        }
-
-
-        content.setText(buildType.getFullName().trim()
-                        + " changed responsibility from "
-                        + oldUser
-                        + " to "
-                        + newUser
-                        + " with comment '"
-                        + responsibilityEntryNew.getComment().trim()
-                        + "'"
-        );
-
-        return content;
-    }
-
-    public SlackNotificationPayloadContent responsibleChanged(SProject project,
-                                     TestNameResponsibilityEntry oldTestNameResponsibilityEntry,
-                                     TestNameResponsibilityEntry newTestNameResponsibilityEntry,
-                                     boolean isUserAction) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public SlackNotificationPayloadContent responsibleChanged(SProject project,
-                                     Collection<TestName> testNames, ResponsibilityEntry entry,
-                                     boolean isUserAction) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  public SlackNotificationPayloadContent responsibleChanged(SProject project,
+                                                            Collection<TestName> testNames, ResponsibilityEntry entry,
+                                                            boolean isUserAction) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 /*
 	HashMap<String, SlackNotificationPayload> formats = new HashMap<String,SlackNotificationPayload>();
@@ -166,5 +170,5 @@ public class SlackNotificationPayloadManager {
 		return server;
 	}	
 */
-	
+
 }

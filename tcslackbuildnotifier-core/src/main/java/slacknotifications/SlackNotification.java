@@ -2,6 +2,7 @@ package slacknotifications;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
+
 import slacknotifications.teamcity.BuildState;
 import slacknotifications.teamcity.payload.content.PostMessageResponse;
 import slacknotifications.teamcity.payload.content.SlackNotificationPayloadContent;
@@ -12,119 +13,119 @@ import java.util.List;
 
 public interface SlackNotification {
 
-	public abstract void setProxy(SlackNotificationProxyConfig proxyConfig);
+  public abstract void setProxy(SlackNotificationProxyConfig proxyConfig);
 
-	public abstract void setProxy(String proxyHost, Integer proxyPort, Credentials credentials);
+  public abstract void setProxy(String proxyHost, Integer proxyPort, Credentials credentials);
 
-	public abstract void post() throws FileNotFoundException, IOException;
+  public abstract void post() throws FileNotFoundException, IOException;
 
-	public abstract Integer getStatus();
+  public abstract Integer getStatus();
 
-	public abstract String getProxyHost();
+  public abstract String getProxyHost();
 
-	public abstract int getProxyPort();
+  public abstract int getProxyPort();
 
-	public abstract String getChannel();
+  public abstract String getChannel();
 
-	public abstract void setChannel(String channel);
+  public abstract void setChannel(String channel);
 
-	public abstract String getTeamName();
+  public abstract String getTeamName();
 
-	public abstract void setTeamName(String teamName);
+  public abstract void setTeamName(String teamName);
 
-	public abstract String getToken();
+  public abstract String getToken();
 
-	public abstract void setToken(String token);
+  public abstract void setToken(String token);
 
-	public abstract String getBotName();
+  public abstract String getBotName();
 
-	public abstract void setBotName(String botName);
+  public abstract void setBotName(String botName);
 
-	public abstract String getFilterBranchName();
+  public abstract String getFilterBranchName();
 
-	public abstract String getBranchDisplayName();
+  public abstract String getBranchDisplayName();
 
-	public abstract void setFilterBranchName(String branchName);
+  public abstract void setFilterBranchName(String branchName);
 
-	public abstract String getIconUrl();
+  public abstract String getIconUrl();
 
-	public abstract void setIconUrl(String iconUrl);
+  public abstract void setIconUrl(String iconUrl);
 
-	public abstract String getParameterisedUrl();
+  public abstract String getParameterisedUrl();
 
-	public abstract String parametersAsQueryString();
+  public abstract String parametersAsQueryString();
 
-	public abstract void addParam(String key, String value);
+  public abstract void addParam(String key, String value);
 
-	public abstract void addParams(List<NameValuePair> paramsList);
+  public abstract void addParams(List<NameValuePair> paramsList);
 
-	public abstract String getParam(String key);
+  public abstract String getParam(String key);
 
-	public abstract void setFilename(String filename);
+  public abstract void setFilename(String filename);
 
-	public abstract String getFilename();
+  public abstract String getFilename();
 
-	public abstract String getContent();
+  public abstract String getContent();
 
-	public abstract Boolean isEnabled();
+  public abstract Boolean isEnabled();
 
-	public abstract void setEnabled(Boolean enabled);
+  public abstract void setEnabled(Boolean enabled);
 
-	public abstract void setEnabled(String enabled);
+  public abstract void setEnabled(String enabled);
 
-	public abstract Boolean isErrored();
+  public abstract Boolean isErrored();
 
-	public abstract void setErrored(Boolean errored);
+  public abstract void setErrored(Boolean errored);
 
-	public abstract String getErrorReason();
+  public abstract String getErrorReason();
 
-	public abstract void setErrorReason(String errorReason);
+  public abstract void setErrorReason(String errorReason);
 
-	public abstract BuildState getBuildStates();
-	
-	public abstract void setBuildStates(BuildState states);
-	
-	//public abstract Integer getEventListBitMask();
-	//public abstract void setTriggerStateBitMask(Integer triggerStateBitMask);
+  public abstract BuildState getBuildStates();
 
-	public abstract String getProxyUsername();
+  public abstract void setBuildStates(BuildState states);
 
-	public abstract void setProxyUsername(String proxyUsername);
+  //public abstract Integer getEventListBitMask();
+  //public abstract void setTriggerStateBitMask(Integer triggerStateBitMask);
 
-	public abstract String getProxyPassword();
+  public abstract String getProxyUsername();
 
-	public abstract void setProxyPassword(String proxyPassword);
+  public abstract void setProxyUsername(String proxyUsername);
 
-	public abstract SlackNotificationPayloadContent getPayload();
+  public abstract String getProxyPassword();
 
-	public abstract void setPayload(SlackNotificationPayloadContent payloadContent);
+  public abstract void setProxyPassword(String proxyPassword);
 
-	public abstract PostMessageResponse getResponse();
+  public abstract SlackNotificationPayloadContent getPayload();
 
-	public abstract void setShowBuildAgent(Boolean showBuildAgent);
+  public abstract void setPayload(SlackNotificationPayloadContent payloadContent);
 
-	public abstract void setShowElapsedBuildTime(Boolean showElapsedBuildTime);
-	
-	public abstract void setShowCommits(boolean showCommits);
+  public abstract PostMessageResponse getResponse();
 
-	public abstract void setShowCommitters(boolean showCommitters);
-	
-	public abstract void setShowTriggeredBy(boolean showTriggeredBy);
+  public abstract void setShowBuildAgent(Boolean showBuildAgent);
 
-	public abstract void setMaxCommitsToDisplay(int maxCommitsToDisplay);
+  public abstract void setShowElapsedBuildTime(Boolean showElapsedBuildTime);
 
-	public abstract void setMentionChannelEnabled(boolean mentionChannelEnabled);
+  public abstract void setShowCommits(boolean showCommits);
 
-	public abstract void setMentionSlackUserEnabled(boolean mentionSlackUserEnabled);
+  public abstract void setShowCommitters(boolean showCommitters);
 
-	public abstract void setMentionHereEnabled(boolean mentionHereEnabled);
+  public abstract void setShowTriggeredBy(boolean showTriggeredBy);
 
-    public abstract void setShowFailureReason(boolean showFailureReason);
+  public abstract void setMaxCommitsToDisplay(int maxCommitsToDisplay);
 
-	public abstract void setMentionWhoTriggeredEnabled(boolean mentionWhoTriggeredEnabled);
+  public abstract void setMentionChannelEnabled(boolean mentionChannelEnabled);
 
-	public abstract void setSendDefaultChannel(boolean sendDefaultChannel);
+  public abstract void setMentionSlackUserEnabled(boolean mentionSlackUserEnabled);
 
-	public abstract void setSendUsers(boolean sendUsers);
+  public abstract void setMentionHereEnabled(boolean mentionHereEnabled);
+
+  public abstract void setShowFailureReason(boolean showFailureReason);
+
+  public abstract void setMentionWhoTriggeredEnabled(boolean mentionWhoTriggeredEnabled);
+
+  public abstract void setSendDefaultChannel(boolean sendDefaultChannel);
+
+  public abstract void setSendUsers(boolean sendUsers);
 
 }

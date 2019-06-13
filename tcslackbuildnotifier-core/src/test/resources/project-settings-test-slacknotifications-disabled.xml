@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-  <slackNotifications enabled="true">
-    <slackNotification token="hook.slack.com" channel="http://localhost/test" enabled="false" format="nvpairs">
-      <states>
-        <state type="buildStarted" enabled="false" />
-        <state type="beforeBuildFinish" enabled="false" />
-        <state type="buildFinished" enabled="false" />
-        <state type="buildBroken" enabled="false" />
-        <state type="buildInterrupted" enabled="false" />
-        <state type="buildSuccessful" enabled="false" />
-        <state type="buildFixed" enabled="false" />
-        <state type="buildFailed" enabled="false" />
-        <state type="responsibilityChanged" enabled="false" />
-      </states>
-    </slackNotification>
-  </slackNotifications>
+    <slackNotifications enabled="true">
+        <slackNotification token="hook.slack.com" channel="http://localhost/test" enabled="false"
+                           format="nvpairs">
+            <states>
+                <state type="buildStarted" enabled="false"/>
+                <state type="beforeBuildFinish" enabled="false"/>
+                <state type="buildFinished" enabled="false"/>
+                <state type="buildBroken" enabled="false"/>
+                <state type="buildInterrupted" enabled="false"/>
+                <state type="buildSuccessful" enabled="false"/>
+                <state type="buildFixed" enabled="false"/>
+                <state type="buildFailed" enabled="false"/>
+                <state type="responsibilityChanged" enabled="false"/>
+            </states>
+        </slackNotification>
+    </slackNotifications>
 </settings>
 
