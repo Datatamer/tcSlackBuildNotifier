@@ -33,6 +33,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -249,32 +250,32 @@ public class SlackNotificationImpl implements SlackNotification {
 
       WebHookPayload requestBody = new WebHookPayload();
 
-      List<Commit> commits = this.payload.getCommits();
+      if (payload != null){
+        List<Commit> commits = this.payload.getCommits();
+        HashSet<String> usersSentTo = new HashSet<String>();
 
-      HashSet<String> usersSentTo = new HashSet<String>();
-      boolean sendToUser;
+        //send to default channel if enabled
+        if (sendDefaultChannel) {
+          sendToChannel(this.getChannel(), requestBody, url);
+        }
 
-      //send to default channel if enabled
-      if (sendDefaultChannel) {
-        sendToChannel(this.getChannel(), requestBody, url);
-      }
+        if (sendUsers) {
+          for (Commit commit : commits) {
+            if (commit.hasSlackUserId()) {
+              String slackUser = commit.getSlackUserId();
+              if (slackUser.charAt(0) != '@') {
+                slackUser = "@" + slackUser;
+              }
 
-      if (sendUsers) {
-        for (Commit commit : commits) {
-          if (commit.hasSlackUserId()) {
-            String slackUser = commit.getSlackUserId();
-            if (slackUser.charAt(0) != '@') {
-              slackUser = "@" + slackUser;
-            }
-
-            /*Skip sending to the user if the commit was a merge from someone else
-             * or if they were already sent the message*/
-            if (!usersSentTo.contains(slackUser) && !isMergeCommit(commit)) {
-              try {
-                sendToChannel(slackUser, requestBody, url);
-                usersSentTo.add(slackUser);
-              } catch (IOException e) {
-                Loggers.SERVER.warn("SlackNotificationImpl :: Unable to find slack userID :: Unable to send to : " + slackUser);
+              /*Skip sending to the user if the commit was a merge from someone else
+               * or if they were already sent the message*/
+              if (!usersSentTo.contains(slackUser) && !isMergeCommit(commit)) {
+                try {
+                  sendToChannel(slackUser, requestBody, url);
+                  usersSentTo.add(slackUser);
+                } catch (IOException e) {
+                  Loggers.SERVER.warn("SlackNotificationImpl :: Unable to find slack userID :: Unable to send to : " + slackUser);
+                }
               }
             }
           }
@@ -368,62 +369,43 @@ public class SlackNotificationImpl implements SlackNotification {
     //Get commits from the user being sent to
     //Divided into own section away from rest of commits
     StringBuilder sbUserCommits = new StringBuilder();
-    int numUserCommits = 0;
-    int numUserCommitsLeft = 0;
-    int numCommitsToAdd = maxCommitsToDisplay;
 
     List<Commit> commits = this.payload.getCommits();
 
-    List<Commit> commitsToDisplay = new ArrayList<Commit>(commits);
+    List<Commit> userCommits = new LinkedList<Commit>();
+    List<Commit> otherCommits = new LinkedList<Commit>();
+
+    // Separate user commits from other commits
+    for(Commit commit : commits){
+      if (commit.getSlackUserId().equals(slackUser.substring(1))) {
+        userCommits.add(commit);
+      } else {
+        otherCommits.add(commit);
+      }
+    }
 
     if (showCommits) {
-      boolean truncatedOther = false;
-      boolean truncatedUser = false;
-      int totalCommits = commitsToDisplay.size();
-
-      //determine how many commits were from the user
-      //used to determine how many in "Your commits" and how many in "Commits"
-      for (Commit commit : commitsToDisplay) {
-        if (commit.getSlackUserId().equals(slackUser.substring(1))) {
-          numUserCommits++;
-        }
-      }
-      numUserCommitsLeft = numUserCommits;
-
-      if (numUserCommits > maxCommitsToDisplay) {
-        truncatedUser = true;
-      }
-
-      if (totalCommits > maxCommitsToDisplay && totalCommits > numUserCommits) {
-        //commitsToDisplay = commitsToDisplay.subList(0, maxCommitsToDisplay > commitsToDisplay.size() ? commitsToDisplay.size() : 5);
-        truncatedOther = true;
-      }
-
-      for (Commit commit : commitsToDisplay) {
-        String revision = commit.getRevision();
-        revision = revision == null ? "" : revision;
-        if (commit.getSlackUserId().equals(slackUser.substring(1))) {
-          sbUserCommits.append(String.format("%s :: %s :: %s\n", revision.substring(0, Math.min(revision.length(), 10)), commit.getUserName(), commit.getDescription()));
-          numUserCommitsLeft--;
-          numCommitsToAdd--;
+      /*
+      Add each commit to the correct String. Adds all user commits before
+      adding commits from others.
+       */
+      for(int i = 0; i < maxCommitsToDisplay; i++){
+        if(!userCommits.isEmpty()){
+          addCommitToMessage(userCommits, sbUserCommits);
+        } else if (!otherCommits.isEmpty()){
+          addCommitToMessage(otherCommits, sbCommits);
         } else {
-          if (numUserCommitsLeft < numCommitsToAdd) {
-            sbCommits.append(String.format("%s :: %s :: %s\n", revision.substring(0, Math.min(revision.length(), 10)), commit.getUserName(), commit.getDescription()));
-            numCommitsToAdd--;
-          }
-        }
-
-        if (numCommitsToAdd == 0) {
+          //Less than max number of commits to display
           break;
         }
       }
 
-      if (truncatedOther && !truncatedUser) {
-        sbCommits.append(String.format("(+ %d more)\n", totalCommits - maxCommitsToDisplay));
+      if (otherCommits.size() > 0 && userCommits.size() == 0) {
+        sbCommits.append(String.format("(+ %d more)\n", otherCommits.size()));
       }
 
-      if (truncatedUser) {
-        sbUserCommits.append(String.format("(+ %d more)\n", numUserCommits - maxCommitsToDisplay));
+      if (userCommits.size() > 0) {
+        sbUserCommits.append(String.format("(+ %d more)\n", userCommits.size()));
       }
 
       if (sbUserCommits.length() > 0) {
@@ -432,18 +414,16 @@ public class SlackNotificationImpl implements SlackNotification {
 
       if (sbCommits.length() > 0) {
         attachment.addField("Commits", sbCommits.toString(), false);
-      } else if (totalCommits > numUserCommits) {
-        String otherCommits;
-        if (totalCommits - numUserCommits > 1) {
-          otherCommits = totalCommits - numUserCommits + " more commits were made by others";
+      } else if (!otherCommits.isEmpty()) {
+        // Different message when only user commits are in the attachment.
+        String others;
+        if (otherCommits.size() > 1) {
+          others = otherCommits.size() + " more commits were made by others";
         } else {
-          otherCommits = "1 more commit was made by others";
+          others = "1 more commit was made by others";
         }
-        attachment.addField(otherCommits, null, false);
-
+        attachment.addField(others, null, false);
       }
-
-
     }
 
     List<String> slackUsers = new ArrayList<String>();
@@ -507,6 +487,15 @@ public class SlackNotificationImpl implements SlackNotification {
 
     attachments.add(attachment);
     return attachments;
+  }
+
+  private void addCommitToMessage(List<Commit> commits, StringBuilder sbCommits){
+    Commit commit = commits.get(0);
+    String revision = commit.getRevision();
+    revision = revision == null ? "" : revision;
+
+    sbCommits.append(String.format("%s :: %s :: %s\n", revision.substring(0, Math.min(revision.length(), 10)), commit.getUserName(), commit.getDescription()));
+    commits.remove(0);
   }
 
   private class WebHookPayload {
