@@ -20,7 +20,7 @@ public class SlackNotificationBuildStateConverterTest {
   @Test
   public void testConvert_02() {
     // Test all 1's except CHANGED_STATUS, since that would  need broken or fixed set
-    BuildState state = SlackNotificationBuildStateConverter.convert(Integer.parseInt("11111011", 2));
+    BuildState state = SlackNotificationBuildStateConverter.convert(Integer.parseInt("11111111", 2));
     assertTrue(state.allEnabled());
   }
 	
@@ -47,6 +47,8 @@ public class SlackNotificationBuildStateConverterTest {
     assertTrue(SlackNotificationBuildStateConverter.convert(OldStyleBuildState.BEFORE_BUILD_FINISHED).enabled(BuildStateEnum.BEFORE_BUILD_FINISHED));
     assertTrue(SlackNotificationBuildStateConverter.convert(OldStyleBuildState.RESPONSIBILITY_CHANGED).enabled(BuildStateEnum.RESPONSIBILITY_CHANGED));
     assertTrue(SlackNotificationBuildStateConverter.convert(OldStyleBuildState.BUILD_INTERRUPTED).enabled(BuildStateEnum.BUILD_INTERRUPTED));
+    assertTrue(SlackNotificationBuildStateConverter.convert(OldStyleBuildState.BUILD_CHANGED_STATUS).enabled(BuildStateEnum.BUILD_CHANGED_STATUS));
+    assertTrue(SlackNotificationBuildStateConverter.convert(OldStyleBuildState.BUILD_CHANGED_STATUS).enabled(BuildStateEnum.BUILD_BROKE_MID));
   }
 
 }

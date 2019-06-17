@@ -224,7 +224,7 @@ public class SlackNotificationConfigTest {
     assertFalse(slacknotificationDMEnabledDefaultDisabled.getSendDefaultChannel());
     BuildState state = new BuildState().setAllEnabled();
 
-    settings.updateSlackNotification("1", "1", "#general", "Steve",
+    settings.updateSlackNotification("1", "1", "#notgeneral", "Steve",
                                      "master", false, state, false, false,
                                      new HashSet<String>(), false, false,
                                      false, false, slacknotificationDMEnabledDefaultDisabled.getContent(), true, false

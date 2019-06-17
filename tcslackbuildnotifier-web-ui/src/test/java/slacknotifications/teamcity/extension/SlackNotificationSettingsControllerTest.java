@@ -39,7 +39,7 @@ public class SlackNotificationSettingsControllerTest {
 
     SlackNotification notification = controller.createMockNotification(
       "theteam",
-      "#general",
+      "#notgeneral",
       "The Bot",
       "tokenthingy",
       SlackNotificationMainConfig.DEFAULT_ICONURL,
