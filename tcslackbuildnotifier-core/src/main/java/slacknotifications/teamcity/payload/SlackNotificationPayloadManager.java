@@ -44,6 +44,11 @@ public class SlackNotificationPayloadManager {
     return content;
   }
 
+  public SlackNotificationPayloadContent statusChanged(SRunningBuild runningBuild, SFinishedBuild previousBuild){
+    SlackNotificationPayloadContent content = new SlackNotificationPayloadContent(server, runningBuild, previousBuild, BuildStateEnum.BUILD_CHANGED_STATUS);
+    return content;
+  }
+
   /**
    * Used by versions of TeamCity less than 7.0
    */

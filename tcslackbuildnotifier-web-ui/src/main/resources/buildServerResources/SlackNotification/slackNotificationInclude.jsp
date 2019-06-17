@@ -106,7 +106,7 @@
 													<td><label for="slackNotificationsEnabled">Enabled:</label></td>
 													<td style="padding-left:3px;" colspan=2><input id="slackNotificationsEnabled" type=checkbox name="slackNotificationsEnabled"/></td>
 												</tr>
-												<tr style="border:none;">
+													<tr style="border:none;">
 													<td>Trigger on Events:</td>
 													<td style="padding-left:3px;"><label style='white-space:nowrap;'>
 														<input onclick='selectBuildState();' class="buildState" id="buildStarted" name="BuildStarted"  type=checkbox />
@@ -127,31 +127,39 @@
 														 Build Responsibility Changed</label>
 													</td>
 												</tr>
-					
-												<tr style="border:none;" class="onCompletion"><td style="vertical-align:text-top; padding-top:0.33em;">On Completion:</td>
+												<tr style="border:none;" class="onCompletion"><td style="vertical-align:text-top; padding-top:0.33em;">When to send:</td>
 													<td colspan=2 >
 														<table style="padding:0; margin:0; left: 0px;"><tbody style="padding:0; margin:0; left: 0px;">
-																<tr style="padding:0; margin:0; left: 0px;"><td style="padding:0; margin:0; left: 0px;"><label style='white-space:nowrap;'>
-																	<input onclick='doExtraCompleted();' class="buildState" id="buildSuccessful" name="BuildSuccessful" type=checkbox />
-																	 Trigger when build is Successful</label>
-																	</td></tr>
-																<tr class="onBuildFixed" style="padding:0; margin:0; left: 0px;"><td style="padding:0; margin:0; padding-left: 2em; left: 0px;"><label style='white-space:nowrap;'>
-																	<input class="buildStateFixed" id="buildFixed" name="BuildFixed" type=checkbox />
-																	 Only trigger when build changes from Failure to Success</label>
-																	</td></tr>
-																<tr style="padding:0; margin:0; left: 0px;"><td style="padding:0; margin:0; left: 0px;"><label style='white-space:nowrap;'>
-																	<input onclick='doExtraCompleted();' class="buildState" id="buildFailed" name="BuildFailed" type=checkbox />
-																	 Trigger when build Fails</label>
-																	</td></tr>
-																<tr class="onBuildFailed" style="padding:0; margin:0; left: 0px;"><td style="padding:0; margin:0; padding-left: 2em; left: 0px;"><label style='white-space:nowrap;'>
-																	<input class="buildStateBroken" id="buildBroken" name="BuildBroken" type=checkbox />
-																	 Only trigger when build changes from Success to Failure</label>
-																	</td></tr>
+															<tr style="padding:0; margin:0; left: 0px;"><td style="padding:0; margin:0; left: 0px;"><label style='white-space:nowrap;'>
+																<input onclick='doExtraCompleted();' class="buildState" id="buildSuccessful" name="BuildSuccessful" type=checkbox />
+																 Trigger when build is Successful</label>
+																</td></tr>
+															<tr class="onBuildFixed" style="padding:0; margin:0; left: 0px;"><td style="padding:0; margin:0; padding-left: 2em; left: 0px;"><label style='white-space:nowrap;'>
+																<input class="buildStateFixed" id="buildFixed" name="BuildFixed" type=checkbox />
+																 Only trigger when build changes from Failure to Success</label>
+																</td></tr>
+															<tr style="padding:0; margin:0; left: 0px;"><td style="padding:0; margin:0; left: 0px;"><label style='white-space:nowrap;'>
+																<input onclick='doExtraCompleted();' class="buildState" id="buildFailed" name="BuildFailed" type=checkbox />
+																 Trigger when build Fails</label>
+																</td></tr>
+															<tr class="onBuildFailed" style="padding:0; margin:0; left: 0px;"><td style="padding:0; margin:0; padding-left: 2em; left: 0px;"><label style='white-space:nowrap;'>
+																<input class="buildStateBroken" id="buildBroken" name="BuildBroken" type=checkbox />
+																 Only trigger when build changes from Success to Failure</label>
+																</td></tr>
+															<tr style="padding:0; margin:0; left: 0px;"><td style="padding:0; margin:0; left: 0px;"><label style='white-space:nowrap;'>
+																<input onclick='doExtraCompleted();' class="buildState" id="buildBrokeMid" name="buildBrokeMid" type=checkbox />
+																 Trigger as soon as part of build fails</label>
+																</td></tr>
+															<tr class="onBuildFailed" style="padding:0; margin:0; left: 0px;"><td style="padding:0; margin:0; padding-left: 2em; left: 0px;"><label style='white-space:nowrap;'>
+                                                                <input class="buildStateBroken" id="buildBroken" name="BuildBroken" type=checkbox />
+                                                                 Only trigger when previous build was successful</label>
+                                                                </td></tr>
 														</tbody></table>
 													</td>
 												</tr>
+
 												<tr style="border:none;">
-													<td>Send or mention on first failure:</td>
+													<td>Send on first failure:</td>
 
 													<td><label style='white-space:nowrap;'>
                                                     	<input class="buildState" id="sendDefaultChannel" name="SendDefaultChannel" type=checkbox />
@@ -162,8 +170,10 @@
                                                         Send to recent commits</label>
                                                     </td>
 												</tr>
-												<tr style="border:none;"><td>&nbsp;</td>
-                                                    <td style="padding-left:3px;"><label style='white-space:nowrap;'>
+												<tr style="border:none;">
+												    <td>Mention on first failure:</td>
+
+                                                    <td><label style='white-space:nowrap;'>
 														<input class="buildState" id="mentionChannelEnabled" name="mentionChannelEnabled" type=checkbox />
 														 @channel</label>
 													</td>

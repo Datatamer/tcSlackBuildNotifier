@@ -79,6 +79,13 @@
 				jQuerySlacknotification('.onBuildFailed').addClass('onCompletionDisabled');
 				jQuerySlacknotification('tr.onBuildFailed td input').attr('disabled', 'disabled');
 			}
+			if(jQuerySlacknotification('#buildBrokeMid').is(':checked')){
+                jQuerySlacknotification('.onBuildBrokeMid').removeClass('onCompletionDisabled');
+                jQuerySlacknotification('tr.onBuildBrokeMid td input').removeAttr('disabled');
+            } else {
+                jQuerySlacknotification('.onBuildBrokeMid').addClass('onCompletionDisabled');
+                jQuerySlacknotification('tr.onBuildBrokeMid td input').attr('disabled', 'disabled');
+            }
 		}
 
 		function toggleCustomContentEnabled(){

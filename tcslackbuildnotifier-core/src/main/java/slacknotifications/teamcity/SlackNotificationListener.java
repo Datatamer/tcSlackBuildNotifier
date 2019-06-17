@@ -1,5 +1,6 @@
 package slacknotifications.teamcity;
 
+import jetbrains.buildServer.messages.Status;
 import jetbrains.buildServer.responsibility.ResponsibilityEntry;
 import jetbrains.buildServer.responsibility.TestNameResponsibilityEntry;
 import jetbrains.buildServer.serverSide.*;
@@ -119,14 +120,18 @@ public class SlackNotificationListener extends BuildServerAdapter {
         slackNotificationConfigWrapper.slackNotification.setPayload(myManager.beforeBuildFinish(sRunningBuild, getPreviousNonPersonalBuild(sRunningBuild)));
         slackNotificationConfigWrapper.slackNotification.setEnabled(slackNotificationConfigWrapper.whc.isEnabledForBuildType(sRunningBuild.getBuildType()) && slackNotificationConfigWrapper.slackNotification.getBuildStates().enabled(BuildStateEnum.BEFORE_BUILD_FINISHED));
       } else if (state.equals(BuildStateEnum.BUILD_FINISHED)) {
-        slackNotificationConfigWrapper.slackNotification.setEnabled(slackNotificationConfigWrapper.whc.isEnabledForBuildType(sRunningBuild.getBuildType()) && slackNotificationConfigWrapper.slackNotification.getBuildStates().enabled(
-          BuildStateEnum.BUILD_FINISHED,
-          sRunningBuild.getStatusDescriptor().isSuccessful(),
-          this.hasBuildChangedHistoricalState(sRunningBuild)
-        ));
+        slackNotificationConfigWrapper.slackNotification.setEnabled(slackNotificationConfigWrapper.whc.isEnabledForBuildType(sRunningBuild.getBuildType()) && slackNotificationConfigWrapper.slackNotification.getBuildStates().enabled(BuildStateEnum.BUILD_FINISHED, sRunningBuild.getStatusDescriptor().isSuccessful(), this.hasBuildChangedHistoricalState(sRunningBuild)));
         slackNotificationConfigWrapper.slackNotification.setPayload(myManager.buildFinished(sRunningBuild, getPreviousNonPersonalBuild(sRunningBuild)));
-        ;
+      } /*else if (state.equals(BuildStateEnum.BUILD_CHANGED_STATUS)) {
+        boolean first = slackNotificationConfigWrapper.whc.isEnabledForBuildType(sRunningBuild.getBuildType());
+        boolean third = sRunningBuild.getStatusDescriptor().isSuccessful();
+        boolean fourth = this.hasBuildChangedHistoricalState(sRunningBuild);
+        BuildState b = slackNotificationConfigWrapper.slackNotification.getBuildStates();
+        boolean second = b.enabled(BuildStateEnum.BUILD_CHANGED_STATUS, third, fourth);
+        slackNotificationConfigWrapper.slackNotification.setEnabled(first && second);
+        slackNotificationConfigWrapper.slackNotification.setPayload(myManager.statusChanged(sRunningBuild, getPreviousNonPersonalBuild(sRunningBuild)));
       }
+      */
 
       doPost(slackNotificationConfigWrapper.slackNotification);
       //Loggers.ACTIVITIES.debug("SlackNotificationListener :: " + myManager.getFormat(slackNotificationConfigWrapper.whc.getPayloadFormat()).getFormatDescription());
@@ -194,6 +199,30 @@ public class SlackNotificationListener extends BuildServerAdapter {
   @Override
   public void beforeBuildFinish(SRunningBuild sRunningBuild) {
     processBuildEvent(sRunningBuild, BuildStateEnum.BEFORE_BUILD_FINISHED);
+  }
+
+  /*
+  Notify as soon as build goes from success to failure
+   */
+  @Override
+  public void buildChangedStatus(SRunningBuild sRunningBuild, Status oldStatus, Status newStatus) {
+    Loggers.SERVER.debug("About to process Slack notifications for " + sRunningBuild.getProjectId() + " at buildState " + BuildStateEnum.BUILD_CHANGED_STATUS.getShortName());
+    for (SlackNotificationConfigWrapper slackNotificationConfigWrapper : getListOfEnabledSlackNotifications(sRunningBuild.getProjectId())) {
+      boolean changed = false;
+      SFinishedBuild previous = getPreviousNonPersonalBuild(sRunningBuild);
+      if (previous != null) {
+        if (newStatus == Status.NORMAL) {
+          changed = previous.getBuildStatus().isFailed();
+        } else {
+          changed = previous.getBuildStatus().isSuccessful();
+        }
+      }
+      slackNotificationConfigWrapper.slackNotification.setEnabled(slackNotificationConfigWrapper.whc.isEnabledForBuildType(sRunningBuild.getBuildType()) &&
+                                                                    slackNotificationConfigWrapper.slackNotification.getBuildStates().enabled(BuildStateEnum.BUILD_CHANGED_STATUS,
+                                                                   newStatus == Status.NORMAL, changed));
+      slackNotificationConfigWrapper.slackNotification.setPayload(myManager.buildFinished(sRunningBuild, getPreviousNonPersonalBuild(sRunningBuild)));
+      doPost(slackNotificationConfigWrapper.slackNotification);
+    }
   }
 
   @Deprecated

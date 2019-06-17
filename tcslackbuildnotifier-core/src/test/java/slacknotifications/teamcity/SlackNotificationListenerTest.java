@@ -98,12 +98,14 @@ public class SlackNotificationListenerTest {
 
     when(httpClient.execute(isA(HttpUriRequest.class))).thenReturn(response);
     slackNotificationImpl = new SlackNotificationImpl(httpClient, "");
+    slackNotificationImpl.setPayload(new SlackNotificationPayloadContent());
     spySlackNotification = spy(slackNotificationImpl);
+    spySlackNotification.setPayload(new SlackNotificationPayloadContent());
     whl = new SlackNotificationListener(sBuildServer, settings, configSettings, manager, factory);
     projSettings = new SlackNotificationProjectSettings();
     when(factory.getSlackNotification()).thenReturn(spySlackNotification);
     //when(manager.isRegisteredFormat("JSON")).thenReturn(true);
-//		when(manager.getFormat("JSON")).thenReturn(payload);
+    //when(manager.getFormat("JSON")).thenReturn(payload);
     //when(manager.getServer()).thenReturn(sBuildServer);
     when(sBuildServer.getProjectManager()).thenReturn(projectManager);
     when(projectManager.findProjectById("project1")).thenReturn(sProject);
@@ -262,21 +264,109 @@ public class SlackNotificationListenerTest {
   }
 
   @Test
-  public void messageSendWhenStatusChangesTest() throws IOException {
-    MockSBuildType sBuildType = new MockSBuildType("Test Build", "A Test Build", "bt1");
-    sBuildType.setProject(sProject);
-    String triggeredBy = "SubVersion";
-    MockSRunningBuild sRunningBuild = new MockSRunningBuild(sBuildType, triggeredBy, Status.NORMAL, "Running", "TestBuild01");
+  public void testBuildBrokeMid() throws IOException {
+    BuildState state = new BuildState();
+    state.enable(BuildStateEnum.BUILD_BROKE_MID);
+    verify(factory.getSlackNotification(), times(0)).post();
+    projSettings.addNewSlackNotification("", "1234", "my-channel", "myteam", null, true, state, true, true, new HashSet<String>(), true, true, true, true, true, true);
+    when(buildHistory.getEntriesBefore(sRunningBuild, false)).thenReturn(finishedSuccessfulBuilds);
 
-    when(settings.getSettings(sRunningBuild.getProjectId(), "slackNotifications")).thenReturn(projSettings);
-
-    MockSProject sProject = new MockSProject("Test Project", "A test project", "project1", "ATestProject", sBuildType);
-    sBuildType.setProject(sProject);
-    SlackNotificationListener whl = new SlackNotificationListener(sBuildServer, settings, configSettings, manager, factory);
-    Status oldStatus = Status.NORMAL;
-    Status newStatus = Status.FAILURE;
+    //showing success when it shouldn't
+    verify(factory.getSlackNotification(), times(0)).post();
     whl.register();
-    whl.buildChangedStatus(sRunningBuild, oldStatus, newStatus);
+    whl.buildChangedStatus(sRunningBuild, Status.NORMAL, Status.FAILURE);
+    verify(factory.getSlackNotification(), times(1)).post();
+  }
+
+  @Test
+  public void testBuildBrokeMidNoSendCompletion() throws IOException {
+    BuildState state = new BuildState();
+    state.enable(BuildStateEnum.BUILD_BROKE_MID);
+    verify(factory.getSlackNotification(), times(0)).post();
+    projSettings.addNewSlackNotification("", "1234", "my-channel", "myteam", null, true, state, true, true, new HashSet<String>(), true, true, true, true, true, true);
+    when(buildHistory.getEntriesBefore(sRunningBuild, false)).thenReturn(finishedSuccessfulBuilds);
+
+    verify(factory.getSlackNotification(), times(0)).post();
+    whl.register();
+    whl.buildChangedStatus(sRunningBuild, Status.NORMAL, Status.FAILURE);
+    verify(factory.getSlackNotification(), times(1)).post();
+    whl.buildFinished(sRunningBuild);
+    verify(factory.getSlackNotification(), times(1)).post();
+  }
+
+  @Test
+  public void testBuildBrokeMidSendCompletion() throws IOException {
+    BuildState state = new BuildState();
+    state.setAllEnabled();
+    verify(factory.getSlackNotification(), times(0)).post();
+    projSettings.addNewSlackNotification("", "1234", "my-channel", "myteam", null, true, state, true, true, new HashSet<String>(), true, true, true, true, true, true);
+    when(buildHistory.getEntriesBefore(sRunningBuild, false)).thenReturn(finishedSuccessfulBuilds);
+
+    verify(factory.getSlackNotification(), times(0)).post();
+    whl.register();
+    whl.buildChangedStatus(sRunningBuild, Status.NORMAL, Status.FAILURE);
+    verify(factory.getSlackNotification(), times(1)).post();
+    whl.buildFinished(sRunningBuild);
+    verify(factory.getSlackNotification(), times(2)).post();
+  }
+
+  @Test
+  public void testBuildBrokeMidSendAllEnabled() throws IOException {
+    BuildState state = new BuildState();
+    state.setAllEnabled();
+    verify(factory.getSlackNotification(), times(0)).post();
+    projSettings.addNewSlackNotification("", "1234", "my-channel", "myteam", null, true, state, true, true, new HashSet<String>(), true, true, true, true, true, true);
+    when(buildHistory.getEntriesBefore(sRunningBuild, false)).thenReturn(finishedSuccessfulBuilds);
+
+    verify(factory.getSlackNotification(), times(0)).post();
+    whl.register();
+    whl.buildChangedStatus(sRunningBuild, Status.NORMAL, Status.FAILURE);
+    verify(factory.getSlackNotification(), times(1)).post();
+  }
+
+  @Test
+  public void testStatusChangeNotFailure() throws IOException {
+    BuildState state = new BuildState();
+    state.setAllEnabled();
+    verify(factory.getSlackNotification(), times(0)).post();
+    projSettings.addNewSlackNotification("", "1234", "my-channel", "myteam", null, true, state, true, true, new HashSet<String>(), true, true, true, true, true, true);
+    when(buildHistory.getEntriesBefore(sRunningBuild, false)).thenReturn(finishedSuccessfulBuilds);
+
+    verify(factory.getSlackNotification(), times(0)).post();
+    whl.register();
+    whl.buildChangedStatus(sRunningBuild, Status.FAILURE, Status.NORMAL);
+    verify(factory.getSlackNotification(), times(0)).post();
+  }
+
+  @Test
+  public void testBrokeMidChange() throws IOException {
+    BuildState state = new BuildState();
+    state.enable(BuildStateEnum.BUILD_BROKE_MID);
+    state.enable(BuildStateEnum.BUILD_BROKE_MID_CHANGE);
+
+    verify(factory.getSlackNotification(), times(0)).post();
+    projSettings.addNewSlackNotification("", "1234", "my-channel", "myteam", null, true, state, true, true, new HashSet<String>(), true, true, true, true, true, true);
+    when(buildHistory.getEntriesBefore(sRunningBuild, false)).thenReturn(finishedSuccessfulBuilds);
+
+    verify(factory.getSlackNotification(), times(0)).post();
+    whl.register();
+    whl.buildChangedStatus(sRunningBuild, Status.NORMAL, Status.FAILURE);
+    verify(factory.getSlackNotification(), times(1)).post();
+  }
+
+  @Test
+  public void testBrokeMidNoChange() throws IOException {
+    BuildState state = new BuildState();
+    state.enable(BuildStateEnum.BUILD_BROKE_MID);
+    state.enable(BuildStateEnum.BUILD_BROKE_MID_CHANGE);
+
+    verify(factory.getSlackNotification(), times(0)).post();
+    projSettings.addNewSlackNotification("", "1234", "my-channel", "myteam", null, true, state, true, true, new HashSet<String>(), true, true, true, true, true, true);
+    when(buildHistory.getEntriesBefore(sRunningBuild, false)).thenReturn(finishedFailedBuilds);
+
+    verify(factory.getSlackNotification(), times(0)).post();
+    whl.register();
+    whl.buildChangedStatus(sRunningBuild, Status.NORMAL, Status.FAILURE);
     verify(factory.getSlackNotification(), times(0)).post();
   }
 

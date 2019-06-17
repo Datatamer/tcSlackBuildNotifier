@@ -54,6 +54,7 @@ public class BuildStateTest {
     state.enable(BUILD_FINISHED);
     state.enable(BUILD_FAILED);
     state.enable(BUILD_SUCCESSFUL);
+    state.enable(BUILD_BROKE_MID);
     assertTrue(state.allEnabled());
   }
 
@@ -180,6 +181,7 @@ public class BuildStateTest {
     state.disable(BEFORE_BUILD_FINISHED);
     state.enable(BUILD_FINISHED);
     state.enable(BUILD_FAILED);
+    state.enable(BUILD_BROKE_MID);
     state.disable(BUILD_SUCCESSFUL);
     state.disable(BUILD_FIXED);
     state.disable(BUILD_BROKEN);
