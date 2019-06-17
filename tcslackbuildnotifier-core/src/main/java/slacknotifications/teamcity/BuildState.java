@@ -24,6 +24,12 @@ public class BuildState {
     states.put(BuildStateEnum.BUILD_FIXED, new SimpleBuildState(BuildStateEnum.BUILD_FIXED, false));
 
     states.put(BuildStateEnum.BUILD_FINISHED, new SimpleBuildState(BuildStateEnum.BUILD_FINISHED, false));
+
+    states.put(BuildStateEnum.BUILD_CHANGED_STATUS, new SimpleBuildState(BuildStateEnum.BUILD_CHANGED_STATUS, false));
+
+    states.put(BuildStateEnum.BUILD_BROKE_MID, new SimpleBuildState(BuildStateEnum.BUILD_BROKE_MID, false));
+    states.put(BuildStateEnum.BUILD_BROKE_MID_CHANGE, new SimpleBuildState(BuildStateEnum.BUILD_BROKE_MID_CHANGE, false));
+
   }
 
   public Set<BuildStateEnum> getStateSet() {
@@ -44,9 +50,7 @@ public class BuildState {
   }
 
   public boolean enabled(BuildStateEnum currentBuildState, boolean success, boolean changed) {
-    if (currentBuildState != BuildStateEnum.BUILD_FINISHED) {
-      return enabled(currentBuildState);
-    } else {
+    if (currentBuildState == BuildStateEnum.BUILD_FINISHED) {
       if (enabled(BUILD_SUCCESSFUL) && enabled(BUILD_FIXED) && changed && success) {
         return true;
       }
@@ -59,6 +63,15 @@ public class BuildState {
       if (enabled(BUILD_FAILED) && !enabled(BUILD_BROKEN) && !success) {
         return true;
       }
+    } else if(currentBuildState == BuildStateEnum.BUILD_CHANGED_STATUS){
+      if (enabled(BUILD_BROKE_MID) && enabled(BUILD_BROKE_MID_CHANGE) && changed && !success) {
+        return true;
+      }
+      if (enabled(BUILD_BROKE_MID) && !enabled(BUILD_BROKE_MID_CHANGE) && !success) {
+        return true;
+      }
+    } else {
+      return enabled(currentBuildState);
     }
     return false;
   }
@@ -72,7 +85,7 @@ public class BuildState {
 
   /**
    * Enable all build events for notification
-   * Note: BROKEN and FIXED restrict builds, so don't set those.
+   * Note: BROKEN, FIXED, and BROKE_MID_CHANGE restrict builds, so don't set those.
    */
   public BuildState setAllEnabled() {
     for (BuildStateEnum state : states.keySet()) {
@@ -81,6 +94,9 @@ public class BuildState {
           disable(state);
           break;
         case BUILD_FIXED:
+          disable(state);
+          break;
+        case BUILD_BROKE_MID_CHANGE:
           disable(state);
           break;
         default:
@@ -141,7 +157,7 @@ public class BuildState {
           enabled++;
         }
       }
-      if (state.equals(BUILD_FINISHED) || state.equals(BUILD_BROKEN) || state.equals(BUILD_FIXED) || state.equals(BUILD_SUCCESSFUL) || state.equals(BUILD_FAILED)) {
+      if (state.equals(BUILD_FINISHED) || state.equals(BUILD_BROKEN) || state.equals(BUILD_FIXED) || state.equals(BUILD_SUCCESSFUL) || state.equals(BUILD_FAILED) || state.equals(BUILD_BROKE_MID)) {
         continue;
       }
       if (states.get(state).isEnabled()) {

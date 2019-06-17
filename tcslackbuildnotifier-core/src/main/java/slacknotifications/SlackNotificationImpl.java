@@ -490,12 +490,11 @@ public class SlackNotificationImpl implements SlackNotification {
   }
 
   private void addCommitToMessage(List<Commit> commits, StringBuilder sbCommits){
-    Commit commit = commits.get(0);
+    Commit commit = commits.remove(0);
     String revision = commit.getRevision();
     revision = revision == null ? "" : revision;
 
     sbCommits.append(String.format("%s :: %s :: %s\n", revision.substring(0, Math.min(revision.length(), 10)), commit.getUserName(), commit.getDescription()));
-    commits.remove(0);
   }
 
   private class WebHookPayload {

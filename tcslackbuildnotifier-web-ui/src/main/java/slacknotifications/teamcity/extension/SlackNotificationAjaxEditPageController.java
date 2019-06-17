@@ -52,6 +52,9 @@ public class SlackNotificationAjaxEditPageController extends BaseController {
   protected static final String BUILD_FIXED = "BuildFixed";
   protected static final String BUILD_FAILED = "BuildFailed";
   protected static final String BUILD_SUCCESSFUL = "BuildSuccessful";
+  protected static final String BUILD_BROKE_MID = "BuildBrokeMid";
+  protected static final String BUILD_BROKE_MID_CHANGE = "BuildBrokeMidChange";
+
 
 
   private final WebControllerManager myWebManager;
@@ -226,6 +229,8 @@ public class SlackNotificationAjaxEditPageController extends BaseController {
                 checkAndAddBuildState(request, states, BuildStateEnum.BUILD_STARTED, BUILD_STARTED);
                 checkAndAddBuildState(request, states, BuildStateEnum.BUILD_INTERRUPTED, BUILD_INTERRUPTED);
                 checkAndAddBuildState(request, states, BuildStateEnum.BEFORE_BUILD_FINISHED, BEFORE_FINISHED);
+                checkAndAddBuildState(request, states, BuildStateEnum.BUILD_BROKE_MID, BUILD_BROKE_MID);
+                checkAndAddBuildState(request, states, BuildStateEnum.BUILD_BROKE_MID_CHANGE, BUILD_BROKE_MID_CHANGE);
                 checkAndAddBuildStateIfEitherSet(request, states, BuildStateEnum.BUILD_FINISHED, BUILD_SUCCESSFUL, BUILD_FAILED);
                 checkAndAddBuildState(request, states, BuildStateEnum.RESPONSIBILITY_CHANGED, "ResponsibilityChanged");
 
