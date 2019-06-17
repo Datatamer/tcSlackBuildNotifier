@@ -141,7 +141,7 @@ public class BuildState {
       if ((state.equals(BUILD_BROKEN) && states.get(BUILD_BROKEN).isEnabled()) || (state.equals(BUILD_FIXED) && states.get(BUILD_FIXED).isEnabled())) {
         return false;
       }
-      if (state.equals(BUILD_BROKEN) || state.equals(BUILD_FIXED)) {
+      if (state.equals(BUILD_BROKEN) || state.equals(BUILD_FIXED) || state.equals(BUILD_BROKE_MID_CHANGE)) {
         continue;
       }
       areAllEnbled = areAllEnbled && states.get(state).isEnabled();

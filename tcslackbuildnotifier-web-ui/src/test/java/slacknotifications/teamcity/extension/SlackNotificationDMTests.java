@@ -21,7 +21,9 @@ import java.io.IOException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+
 public class SlackNotificationDMTests {
+
 
   SBuildServer sBuildServer = mock(SBuildServer.class);
   WebControllerManager webControllerManager = mock(WebControllerManager.class);
@@ -211,5 +213,7 @@ public class SlackNotificationDMTests {
 
     assertNotNull(sendMock(true));
   }
+  
+
 }
 

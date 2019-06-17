@@ -3,7 +3,7 @@ package slacknotifications.teamcity;
 public enum BuildStateEnum {
   BUILD_STARTED("buildStarted", "started"),
   BUILD_FINISHED("buildFinished", "finished"),
-  BUILD_CHANGED_STATUS	("changedStatus", 			"changed status"),
+  BUILD_CHANGED_STATUS	("buildChangedStatus", 			"changed status"),
   BEFORE_BUILD_FINISHED("beforeBuildFinish", "nearly finished"),
   RESPONSIBILITY_CHANGED("responsibilityChanged", "changed responsibility"),
   BUILD_INTERRUPTED("buildInterrupted", "been interrupted"),
@@ -11,7 +11,7 @@ public enum BuildStateEnum {
   BUILD_FAILED("buildFailed", "failed"),
   BUILD_FIXED("buildFixed", "been fixed"),
   BUILD_BROKEN("buildBroken", "broken"),
-  BUILD_BROKE_MID("statusChanged", "broke mid"),
+  BUILD_BROKE_MID("buildBrokeMid", "broke mid"),
   //Trigger when build broke while running and the previous run of the build was successful
   BUILD_BROKE_MID_CHANGE("buildBrokeMidChange", "broke mid change");
 

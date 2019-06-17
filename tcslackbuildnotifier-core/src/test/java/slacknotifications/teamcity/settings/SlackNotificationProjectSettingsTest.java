@@ -39,7 +39,7 @@ public class SlackNotificationProjectSettingsTest {
     SlackNotificationProjectSettingsFactory psf = new SlackNotificationProjectSettingsFactory(psm);
     SlackNotificationProjectSettings settings = psf.createProjectSettings("project1");
     BuildState state = new BuildState().setAllEnabled();
-    settings.addNewSlackNotification("1", "1", "#general", "Steve",
+    settings.addNewSlackNotification("1", "1", "#notgeneral", "Steve",
                                      "master", false, state, false, false,
                                      new HashSet<String>(), false, false,
                                      false, false, true, true

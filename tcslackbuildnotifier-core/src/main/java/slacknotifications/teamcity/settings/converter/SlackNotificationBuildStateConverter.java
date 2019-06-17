@@ -23,6 +23,9 @@ public class SlackNotificationBuildStateConverter {
     newStates.setEnabled(BuildStateEnum.BUILD_FINISHED, OldStyleBuildState.enabled(OldStyleBuildState.BUILD_FINISHED, oldState));
     newStates.setEnabled(BuildStateEnum.BUILD_SUCCESSFUL, OldStyleBuildState.enabled(OldStyleBuildState.BUILD_FINISHED, oldState));
     newStates.setEnabled(BuildStateEnum.BUILD_FAILED, OldStyleBuildState.enabled(OldStyleBuildState.BUILD_FINISHED, oldState));
+    newStates.setEnabled(BuildStateEnum.BUILD_CHANGED_STATUS, OldStyleBuildState.enabled(OldStyleBuildState.BUILD_CHANGED_STATUS, oldState));
+    newStates.setEnabled(BuildStateEnum.BUILD_BROKE_MID, OldStyleBuildState.enabled(OldStyleBuildState.BUILD_CHANGED_STATUS, oldState));
+
 
     // If BUILD_CHANGED_STATUS was set, the user probably wanted to know iof the build went from broken to fixed.
     // Therefore, translate those into the right new settings.

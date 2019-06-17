@@ -55,6 +55,7 @@ public class BuildStateTest {
     state.enable(BUILD_FAILED);
     state.enable(BUILD_SUCCESSFUL);
     state.enable(BUILD_BROKE_MID);
+    state.enable(BUILD_CHANGED_STATUS);
     assertTrue(state.allEnabled());
   }
 

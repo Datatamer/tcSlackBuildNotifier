@@ -19,7 +19,7 @@ public final class OldStyleBuildState {
     shortNameMessages = new HashMap<Integer, String>();
     shortNameMessages.put(BUILD_STARTED, "buildStarted");
     shortNameMessages.put(BUILD_FINISHED, "buildFinished");
-    shortNameMessages.put(BUILD_CHANGED_STATUS, "statusChanged");
+    shortNameMessages.put(BUILD_CHANGED_STATUS, "buildChangedStatus");
     shortNameMessages.put(BEFORE_BUILD_FINISHED, "beforeBuildFinish");
     shortNameMessages.put(RESPONSIBILITY_CHANGED, "responsibilityChanged");
     shortNameMessages.put(BUILD_INTERRUPTED, "buildInterrupted");
