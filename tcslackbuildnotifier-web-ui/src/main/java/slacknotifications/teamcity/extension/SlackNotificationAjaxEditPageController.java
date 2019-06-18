@@ -232,6 +232,7 @@ public class SlackNotificationAjaxEditPageController extends BaseController {
                 checkAndAddBuildState(request, states, BuildStateEnum.BUILD_BROKE_MID, BUILD_BROKE_MID);
                 checkAndAddBuildState(request, states, BuildStateEnum.BUILD_BROKE_MID_CHANGE, BUILD_BROKE_MID_CHANGE);
                 checkAndAddBuildStateIfEitherSet(request, states, BuildStateEnum.BUILD_FINISHED, BUILD_SUCCESSFUL, BUILD_FAILED);
+                checkAndAddBuildStateIfEitherSet(request, states, BuildStateEnum.BUILD_CHANGED_STATUS, BUILD_BROKE_MID, null);
                 checkAndAddBuildState(request, states, BuildStateEnum.RESPONSIBILITY_CHANGED, "ResponsibilityChanged");
 
                 if ((request.getParameter("buildTypeSubProjects") != null) && ("on".equalsIgnoreCase(request.getParameter("buildTypeSubProjects")))) {

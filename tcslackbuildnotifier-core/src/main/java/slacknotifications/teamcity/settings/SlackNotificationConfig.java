@@ -477,6 +477,13 @@ public class SlackNotificationConfig {
           enabledStates += ", Build Successful";
         }
       }
+      if (states.enabled(BuildStateEnum.BUILD_BROKE_MID)) {
+        if (states.enabled(BuildStateEnum.BUILD_BROKE_MID_CHANGE)) {
+          enabledStates += ", Build Broke Mid Run";
+        } else {
+          enabledStates += ", Build Failed Mid Run";
+        }
+      }
       if (enabledStates.length() > 0) {
         return enabledStates.substring(1);
       } else {

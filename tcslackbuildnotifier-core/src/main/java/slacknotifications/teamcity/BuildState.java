@@ -138,7 +138,8 @@ public class BuildState {
   public boolean allEnabled() {
     boolean areAllEnbled = true;
     for (BuildStateEnum state : states.keySet()) {
-      if ((state.equals(BUILD_BROKEN) && states.get(BUILD_BROKEN).isEnabled()) || (state.equals(BUILD_FIXED) && states.get(BUILD_FIXED).isEnabled())) {
+      if ((state.equals(BUILD_BROKEN) && states.get(BUILD_BROKEN).isEnabled()) || (state.equals(BUILD_FIXED) && states.get(BUILD_FIXED).isEnabled())
+      || (state.equals(BUILD_BROKE_MID) && states.get(BUILD_BROKE_MID_CHANGE).isEnabled())) {
         return false;
       }
       if (state.equals(BUILD_BROKEN) || state.equals(BUILD_FIXED) || state.equals(BUILD_BROKE_MID_CHANGE)) {
@@ -156,6 +157,9 @@ public class BuildState {
         if (finishEnabled()) {
           enabled++;
         }
+      }
+      if (state.equals(BUILD_CHANGED_STATUS) && states.get(BUILD_BROKE_MID).isEnabled()) {
+        enabled++;
       }
       if (state.equals(BUILD_FINISHED) || state.equals(BUILD_BROKEN) || state.equals(BUILD_FIXED) || state.equals(BUILD_SUCCESSFUL) || state.equals(BUILD_FAILED) || state.equals(BUILD_BROKE_MID)) {
         continue;

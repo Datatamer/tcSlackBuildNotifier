@@ -24,6 +24,7 @@ public class SlackNotificationConfigTest {
   SlackNotificationConfig slacknotificationMostEnabled;
   SlackNotificationConfig slacknotificationCustomContent;
   SlackNotificationConfig slacknotificationDMEnabledDefaultDisabled;
+  SlackNotificationConfig slacknotificationNoDMNoDefault;
 
 
   @Before
@@ -35,6 +36,8 @@ public class SlackNotificationConfigTest {
     slacknotificationMostEnabled = ConfigLoaderUtil.getFirstSlackNotificationInConfig(new File("src/test/resources/project-settings-test-all-but-respchange-states-enabled.xml"));
     slacknotificationCustomContent = ConfigLoaderUtil.getFirstSlackNotificationInConfig(new File("src/test/resources/project-settings-test-custom-content.xml"));
     slacknotificationDMEnabledDefaultDisabled = ConfigLoaderUtil.getFirstSlackNotificationInConfig(new File("src/test/resources/project-settings-send-DM-test.xml"));
+    slacknotificationNoDMNoDefault = ConfigLoaderUtil.getFirstSlackNotificationInConfig(new File("src/test/resources/project-settings-no-send-default-test.xml"));
+
   }
 
 //	private SlackNotificationConfig getFirstSlackNotificationInConfig(File f) throws JDOMException, IOException{
@@ -248,7 +251,12 @@ public class SlackNotificationConfigTest {
 
   @Test
   public void keepSendChannelWhenUpgradingTest() {
-    assertFalse(slacknotificationDMEnabledDefaultDisabled.getSendDefaultChannel());
+    assertTrue(slacknotificationNoDMNoDefault.getSendDefaultChannel());
+    assertFalse(slacknotificationNoDMNoDefault.getSendUsers());
   }
 
+  @Test
+  public void defaultChannelIsFalseTest() {
+    assertFalse(slacknotificationDMEnabledDefaultDisabled.getSendDefaultChannel());
+  }
 }
