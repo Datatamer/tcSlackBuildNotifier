@@ -562,6 +562,13 @@ public class SlackNotificationConfig {
     return "";
   }
 
+  public String getStateBuildBrokeMidChangeAsChecked() {
+    if (states.enabled(BUILD_BROKE_MID_CHANGE)) {
+      return "checked ";
+    }
+    return "";
+  }
+
   public Boolean isEnabledForAllBuildsInProject() {
     return allBuildTypesEnabled;
   }
