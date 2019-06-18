@@ -246,4 +246,9 @@ public class SlackNotificationConfigTest {
     assertFalse(slacknotificationDMEnabledDefaultDisabled.getSendDefaultChannel());
   }
 
+  @Test
+  public void keepSendChannelWhenUpgradingTest() {
+    assertFalse(slacknotificationDMEnabledDefaultDisabled.getSendDefaultChannel());
+  }
+
 }

@@ -377,7 +377,7 @@ public class SlackNotificationImpl implements SlackNotification {
 
     // Separate user commits from other commits
     for(Commit commit : commits){
-      if (commit.getSlackUserId().equals(slackUser.substring(1))) {
+      if (commit.hasSlackUserId() && commit.getSlackUserId().equals(slackUser.substring(1))) {
         userCommits.add(commit);
       } else {
         otherCommits.add(commit);

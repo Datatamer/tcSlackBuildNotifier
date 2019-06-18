@@ -118,8 +118,15 @@ public class SlackNotificationConfig {
       this.setMentionWhoTriggeredEnabled(Boolean.parseBoolean(e.getAttributeValue(WHO_TRIGGERED_ENABLED_MESSAGE)));
     }
 
+    /*
+    When updating to new version, sendDefaultChannel will not be in XML file, so this will enable sending to default
+    channel (which has always been behavior of older versions) until the checkbox is adjusted by the user.
+     */
     if (e.getAttribute(SEND_DEFAULT_CHANNEL) != null) {
       this.setSendDefaultChannel(Boolean.parseBoolean(e.getAttributeValue("sendDefaultChannel")));
+    }
+    else {
+      this.setSendDefaultChannel(true);
     }
 
     if (e.getAttribute(SEND_USERS) != null) {
