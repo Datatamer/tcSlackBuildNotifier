@@ -52,8 +52,8 @@ public class SlackNotificationAjaxEditPageController extends BaseController {
   protected static final String BUILD_FIXED = "BuildFixed";
   protected static final String BUILD_FAILED = "BuildFailed";
   protected static final String BUILD_SUCCESSFUL = "BuildSuccessful";
-  protected static final String BUILD_BROKE_MID = "BuildBrokeMid";
-  protected static final String BUILD_BROKE_MID_CHANGE = "BuildBrokeMidChange";
+  protected static final String BUILD_BROKE_MID = "buildBrokeMid";
+  protected static final String BUILD_BROKE_MID_CHANGE = "buildBrokeMidChange";
 
 
 

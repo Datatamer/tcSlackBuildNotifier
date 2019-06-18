@@ -213,7 +213,6 @@ public class SlackNotificationDMTests {
 
     assertNotNull(sendMock(true));
   }
-  
 
 }
 

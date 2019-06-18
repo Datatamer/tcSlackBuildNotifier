@@ -150,8 +150,8 @@
 																<input onclick='doExtraCompleted();' class="buildState" id="buildBrokeMid" name="buildBrokeMid" type=checkbox />
 																 Trigger as soon as part of build fails</label>
 																</td></tr>
-															<tr class="onBuildFailed" style="padding:0; margin:0; left: 0px;"><td style="padding:0; margin:0; padding-left: 2em; left: 0px;"><label style='white-space:nowrap;'>
-                                                                <input class="buildStateBroken" id="buildBroken" name="BuildBroken" type=checkbox />
+															<tr class="onBuildBrokeMid" style="padding:0; margin:0; left: 0px;"><td style="padding:0; margin:0; padding-left: 2em; left: 0px;"><label style='white-space:nowrap;'>
+                                                                <input class="buildStateBrokeMidChange" id="buildBrokeMidChange" name="buildBrokeMidChange" type=checkbox />
                                                                  Only trigger when previous build was successful</label>
                                                                 </td></tr>
 														</tbody></table>
@@ -162,7 +162,7 @@
 													<td>Send on first failure:</td>
 
 													<td><label style='white-space:nowrap;'>
-                                                    	<input class="buildState" id="sendDefaultChannel" name="SendDefaultChannel" type=checkbox />
+                                                    	<input class="buildState" id="sendDefaultChannel" name="sendDefaultChannel" type=checkbox />
                                                     	Send to Channel</label>
                                                     </td>
                                                     <td><label style='white-space:nowrap;'>

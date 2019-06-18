@@ -170,6 +170,18 @@ public class SlackNotificationConfigTest {
   }
 
   @Test
+  public void testGetStateBuildBrokeMidAsChecked() {
+    assertTrue(slacknotificationAllEnabled.getStateBuildBrokeMidAsChecked().equals(CHECKED));
+    assertFalse(slacknotificationAllDisabled.getStateBuildBrokeMidAsChecked().equals(CHECKED));
+  }
+
+  @Test
+  public void testGetStateBuildBrokeMidChangeAsChecked() {
+    assertFalse(slacknotificationAllEnabled.getStateBuildBrokeMidChangeAsChecked().equals(CHECKED));
+    assertFalse(slacknotificationAllDisabled.getStateBuildBrokeMidChangeAsChecked().equals(CHECKED));
+  }
+
+  @Test
   public void loading_config_when_custom_content_section_is_present_sets_customContentEnabled() {
     assertTrue(slacknotificationCustomContent.hasCustomContent());
   }

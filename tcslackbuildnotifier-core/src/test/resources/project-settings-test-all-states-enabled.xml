@@ -14,7 +14,7 @@
                 <state type="buildFailed" enabled="true"/>
                 <state type="responsibilityChanged" enabled="true"/>
                 <state type="buildBrokeMid" enabled="true"/>
-                <state type="buildBrokeMidChange" enabled="true"/>
+                <state type="buildBrokeMidChange" enabled="false"/>
                 <state type="buildChangedStatus" enabled="true"/>
             </states>
             <parameters>
