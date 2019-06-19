@@ -214,5 +214,35 @@ public class SlackNotificationDMTests {
     assertNotNull(sendMock(true));
   }
 
+  @Test
+  public void allNullSlackIDTest() throws IOException {
+    controller.addCommitMockNotification(new Commit("abb23b4", "Merge of branch xyz", "Jimbo", null));
+    controller.addCommitMockNotification(new Commit("abb23b4", "Merge of branch xyz", "frankjh3", null));
+    controller.addCommitMockNotification(new Commit("jdajfla", "Did some stuff", "frankjh3", null));
+
+    assertNotNull(sendMock(true));
+  }
+
+  @Test
+  public void someNullSlackIDTest() throws IOException {
+    controller.addCommitMockNotification(new Commit("abb23b4", "Merge of branch xyz", "Jimbo", null));
+    controller.addCommitMockNotification(new Commit("abb23b4", "Merge of branch xyz", "frankjh3", "frankie.holzapfel"));
+    controller.addCommitMockNotification(new Commit("jdajfla", "Did some stuff", "someone", null));
+    controller.addCommitMockNotification(new Commit("abb23b4", "Merge of branch xyz", "frankjh3", "frankie.holzapfel"));
+    controller.addCommitMockNotification(new Commit("abb23b4", "Merge of branch xyz", "frankjh3", "frankie.holzapfel"));
+    controller.addCommitMockNotification(new Commit("jdajfla", "Did some stuff", "someone", null));
+    controller.addCommitMockNotification(new Commit("jdajfla", "Did some stuff", "someone", null));
+    controller.addCommitMockNotification(new Commit("abb23b4", "Merge of branch xyz", "frankjh3", "frankie.holzapfel"));
+    assertNotNull(sendMock(true));
+  }
+
+  @Test
+  public void twoNullSlackIDTest() throws IOException {
+    controller.addCommitMockNotification(new Commit("abb23b4", "Merge of branch xyz", "Jimbo", null));
+    controller.addCommitMockNotification(new Commit("abb23b4", "commiting stuff from frankjh3", "frankjh3", null));
+
+    assertNotNull(sendMock(true));
+  }
+
 }
 

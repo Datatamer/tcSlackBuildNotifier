@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <slackNotifications enabled="true">
+        <slackNotification channel="#teamcity_slack_tests" token="https://hooks.slack."
+                           enabled="true" mention-channel-enabled="false"
+                           mention-slack-user-enabled="false" mention-here-enabled="true">
+            <states>
+                <state type="buildFixed" enabled="false"/>
+                <state type="buildInterrupted" enabled="true"/>
+                <state type="responsibilityChanged" enabled="false"/>
+                <state type="buildSuccessful" enabled="true"/>
+                <state type="buildStarted" enabled="false"/>
+                <state type="buildBroken" enabled="false"/>
+                <state type="beforeBuildFinish" enabled="false"/>
+                <state type="buildFailed" enabled="true"/>
+                <state type="buildFinished" enabled="true"/>
+            </states>
+            <build-types enabled-for-all="true" enabled-for-subprojects="true"/>
+        </slackNotification>
+    </slackNotifications>
+</settings>
+

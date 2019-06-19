@@ -118,8 +118,15 @@ public class SlackNotificationConfig {
       this.setMentionWhoTriggeredEnabled(Boolean.parseBoolean(e.getAttributeValue(WHO_TRIGGERED_ENABLED_MESSAGE)));
     }
 
+    /*
+    When updating to new version, sendDefaultChannel will not be in XML file, so this will enable sending to default
+    channel (which has always been behavior of older versions) until the checkbox is adjusted by the user.
+     */
     if (e.getAttribute(SEND_DEFAULT_CHANNEL) != null) {
       this.setSendDefaultChannel(Boolean.parseBoolean(e.getAttributeValue("sendDefaultChannel")));
+    }
+    else {
+      this.setSendDefaultChannel(true);
     }
 
     if (e.getAttribute(SEND_USERS) != null) {
@@ -468,6 +475,13 @@ public class SlackNotificationConfig {
           enabledStates += ", Build Fixed";
         } else {
           enabledStates += ", Build Successful";
+        }
+      }
+      if (states.enabled(BuildStateEnum.BUILD_BROKE_MID)) {
+        if (states.enabled(BuildStateEnum.BUILD_BROKE_MID_CHANGE)) {
+          enabledStates += ", Build Broke Mid Run";
+        } else {
+          enabledStates += ", Build Failed Mid Run";
         }
       }
       if (enabledStates.length() > 0) {

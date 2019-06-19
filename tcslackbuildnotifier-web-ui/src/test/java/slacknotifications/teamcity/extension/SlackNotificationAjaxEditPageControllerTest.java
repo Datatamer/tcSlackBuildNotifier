@@ -84,6 +84,9 @@ public class SlackNotificationAjaxEditPageControllerTest {
 
     checkAndAddBuildStateIfEitherSet(requestSuccessOnAndFailureOff, states, BuildStateEnum.BUILD_FINISHED, BUILD_SUCCESSFUL, BUILD_FAILED);
     assertTrue(states.enabled(BuildStateEnum.BUILD_FINISHED));
+
+    checkAndAddBuildStateIfEitherSet(requestSuccessOnAndFailureOff, states, BuildStateEnum.BUILD_CHANGED_STATUS, BUILD_BROKE_MID, null);
+    assertFalse(states.enabled(BuildStateEnum.BUILD_CHANGED_STATUS));
   }
 
   @Test
