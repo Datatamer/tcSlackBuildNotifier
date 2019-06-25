@@ -466,7 +466,7 @@ public class SlackNotificationImpl implements SlackNotification {
       mentionContent += "\"" + this.payload.getBuildName() + "\" Failed ";
 
       if (mentionChannelEnabled) {
-        mentionContent += "<!channel> ";
+        mentionContent += "<@channel> ";
       }
       if (mentionSlackUserEnabled && !slackUsers.isEmpty() && !this.payload.isMergeBranch()) {
         mentionContent += StringUtil.join(" ", slackUsers);
