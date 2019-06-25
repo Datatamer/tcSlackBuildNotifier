@@ -159,7 +159,7 @@
 												</tr>
 
 												<tr style="border:none;">
-													<td>Send on first failure:</td>
+													<td>Send to:</td>
 
 													<td><label style='white-space:nowrap;'>
                                                     	<input class="buildState" id="sendDefaultChannel" name="sendDefaultChannel" type=checkbox />
